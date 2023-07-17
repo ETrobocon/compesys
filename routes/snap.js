@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post('/', bodyParser.raw({type: ["image/png"]}), (req, res, next) => {
     try {
-        fs.writeFile('image.jpeg', req.body, (error) => {
+        fs.writeFile('image.png', req.body, (error) => {
             if (error) {
                 throw error;
             }
