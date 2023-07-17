@@ -4,14 +4,20 @@ const fs = require("fs");
 const router = express.Router();
 
 router.post('/', bodyParser.raw({type: ["image/png"]}), (req, res, next) => {
-    fs.writeFile('image.jpeg', req.body, (error) => {
-        if (error) {
-            throw error;
-        }
-    });
-    res.header('Content-Type', 'application/json; charset=utf-8')
-    res.status(201).json({status: 'Created'});
-    return
+    try {
+        fs.writeFile('image.jpeg', req.body, (error) => {
+            if (error) {
+                throw error;
+            }
+        });
+        res.header('Content-Type', 'application/json; charset=utf-8')
+        res.status(201).json({status: 'Created'});
+        return
+    } catch (error) {
+        res.header('Content-Type', 'application/json; charset=utf-8')
+        res.status(500).json({status: 'Internal Server Error'});
+        return
+    }
 });
 
 module.exports = router;
