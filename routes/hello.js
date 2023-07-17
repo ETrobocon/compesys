@@ -9,7 +9,11 @@ router.get('/', (req, res, next) => {
         return;
     } catch (error) {
         res.header('Content-Type', 'application/json; charset=utf-8')
-        res.status(500).json({status: 'Internal Server Error'});
+        res.status(500).json(
+            {
+                status: 'Internal Server Error'
+            }
+        );
         return
     }
 });

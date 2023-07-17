@@ -9,7 +9,11 @@ router.get('/', (req, res, next) => {
         return
     } catch (error) {
         res.header('Content-Type', 'application/json; charset=utf-8')
-        res.status(500).json({status: 'Internal Server Error'});
+        res.status(500).json(
+            {
+                status: 'Internal Server Error'
+            }
+        );
         return 
     }
 });
@@ -19,7 +23,12 @@ router.put('/', (req, res, next) => {
         const pwm = Number(req.query.pwm)
         if (pwm === NaN || !(pwm >= 0 && pwm <= 100)) {
             res.header('Content-Type', 'application/json; charset=utf-8')
-            res.status(400).json({status: 'Bad Request'});
+            res.status(400).json(
+                {
+                    status: 'Bad Request',
+                    message: 'pwm not specified or out of range',
+                }
+            );
             return
         }
         const param = {'message': 'hello world'};
@@ -28,7 +37,11 @@ router.put('/', (req, res, next) => {
         return
     } catch (error) {
         res.header('Content-Type', 'application/json; charset=utf-8')
-        res.status(500).json({status: 'Internal Server Error'});
+        res.status(500).json(
+            {
+                status: 'Internal Server Error',
+            }
+        );
         return 
     }
 });
