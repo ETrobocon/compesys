@@ -17,6 +17,17 @@ router.post('/', bodyParser.raw({type: ["image/png"]}), (req, res, next) => {
             );
             return
         }
+        const teamId = req.query.teamId
+        if (teamId === '') {
+            res.header('Content-Type', 'application/json; charset=utf-8')
+            res.status(400).json(
+                {
+                    status: 'Bad Request',
+                    message: 'ID not specified or not numeric',
+                }
+            );
+            return
+        }
         if (req.get('Content-Type') === 'image/png') {
             res.header('Content-Type', 'application/json; charset=utf-8')
             res.status(400).json(
