@@ -1,12 +1,14 @@
-const express = require('express');
 const bodyParser = require('body-parser')
 const fs = require("fs");
+const express = require('express');
 const router = express.Router();
-const STATE = require('./constants').STATE;
+const { STATE, TEMP_DIR } = require('../constants');
 
 router.post('/', bodyParser.raw({type: ["image/png"]}), (req, res, next) => {
     try {
-        if (app.get('state') !== STATE.IN_COMPETITION) {
+        if ( app.get('state') === STATE.READY ||
+            app.get('state') === STATE.GOAL) {
+            
             res.status(403).json(
                 {
                     status: 'Forbidden',

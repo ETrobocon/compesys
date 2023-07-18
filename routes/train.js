@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const STATE = require('./constants').STATE;
+const { STATE } = require('../constants');
 
 router.get('/', (req, res, next) => {
     try {
-        if (app.get('state') !== STATE.IN_COMPETITION) {
+        if ( app.get('state') === STATE.READY ||
+            app.get('state') === STATE.GOAL) {
+            
             res.status(403).json(
                 {
                     status: 'Forbidden',
@@ -12,7 +14,7 @@ router.get('/', (req, res, next) => {
                 }
             );
             return
-        }
+        }   
 
         // TODO: Iot列車からデータを取得する
 
@@ -47,7 +49,9 @@ router.get('/', (req, res, next) => {
 
 router.put('/', (req, res, next) => {
     try {
-        if (app.get('state') !== STATE.IN_COMPETITION) {
+        if ( app.get('state') === STATE.READY ||
+            app.get('state') === STATE.GOAL) {
+            
             res.status(403).json(
                 {
                     status: 'Forbidden',
