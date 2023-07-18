@@ -6,6 +6,9 @@ const STATE = {
     GOAL: 4,        // ゴール
 }
 
+const TEMP_DIR = '/tmp/etrobo'
+
 module.exports = {
     STATE: STATE,
+    TEMP_DIR: TEMP_DIR,
 }
