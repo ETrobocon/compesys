@@ -1,5 +1,6 @@
 require('dotenv').config()
 const fs = require('fs');
+const { execSync } = require('child_process')
 const express = require('express');
 const app = express();
 
@@ -17,24 +18,15 @@ app.use('/matchmaker', matchmaker);
 app.set('state', STATE.UNDEFINDED);
 
 // 一時フォルダの初期化
-if(fs.existsSync(TEMP_DIR) ){
-    const dir = TEMP_DIR;
-    fs.readdir(dir, (err, files) => {
-        if(err){
-            throw err;
-        }
-        files.forEach((file) => {
-            fs.unlink(`${dir}/${file}`, (err) => {
-                if(err){
-                    throw(err);
-                }
-                console.log(`deleted ${file}`);
-            });
-        });
-    });
+if(fs.existsSync(TEMP_DIR)){
+    const stdout = execSync(`rm -rf ${TEMP_DIR}/*`);
+    console.log(`stdout: ${stdout.toString()}`)
 } else {
-    fs.mkdir(TEMP_DIR, (err) => {
+    fs.mkdir(TEMP_DIR, { mode: 0o777 }, (err) => {
         if (err) { throw err; }
+        fs.chmodSync(TEMP_DIR, 0o777,  (err) => {
+            if (err) { throw err; }
+        });
     });
 }
 
