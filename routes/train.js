@@ -4,8 +4,8 @@ const { STATE } = require('../constants');
 
 router.get('/', (req, res, next) => {
     try {
-        if ( app.get('state') === STATE.READY ||
-            app.get('state') === STATE.GOAL) {
+        if ( req.app.get('state') === STATE.READY ||
+            req.app.get('state') === STATE.GOAL) {
             
             res.status(403).json(
                 {
@@ -49,8 +49,8 @@ router.get('/', (req, res, next) => {
 
 router.put('/', (req, res, next) => {
     try {
-        if ( app.get('state') === STATE.READY ||
-            app.get('state') === STATE.GOAL) {
+        if ( req.app.get('state') === STATE.READY ||
+            req.app.get('state') === STATE.GOAL) {
             
             res.status(403).json(
                 {

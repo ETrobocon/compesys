@@ -6,8 +6,8 @@ const { STATE, TEMP_DIR } = require('../constants');
 
 router.post('/', bodyParser.raw({type: ["image/png"]}), (req, res, next) => {
     try {
-        if ( app.get('state') === STATE.READY ||
-            app.get('state') === STATE.GOAL) {
+        if ( req.app.get('state') === STATE.READY ||
+            req.app.get('state') === STATE.GOAL) {
             
             res.status(403).json(
                 {
