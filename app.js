@@ -17,17 +17,21 @@ app.use('/matchmaker', matchmaker);
 app.set('state', STATE.UNDEFINDED);
 
 // 一時フォルダの初期化
-if( fs.existsSync(TEMP_DIR) ){
-    const items = fs.readdirSync(TEMP_DIR)
-    for (const item of items) {
-        const deleteTarget = path.join(TEMP_DIR, item)
-        if (fs.lstatSync(deleteTarget).isDirectory()) {
-            rmDir(deleteTarget)
-        } else {
-            fs.unlinkSync(deleteTarget)
+if(fs.existsSync(TEMP_DIR) ){
+    const dir = TEMP_DIR;
+    fs.readdir(dir, (err, files) => {
+        if(err){
+            throw err;
         }
-    }
-    fs.rmdirSync(dirPath)
+        files.forEach((file) => {
+            fs.unlink(`${dir}/${file}`, (err) => {
+                if(err){
+                    throw(err);
+                }
+                console.log(`deleted ${file}`);
+            });
+        });
+    });
 } else {
     fs.mkdir(TEMP_DIR, (err) => {
         if (err) { throw err; }
