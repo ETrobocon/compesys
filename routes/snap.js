@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const { STATE, TEMP_DIR } = require('../constants');
 
-router.post('/', bodyParser.raw({type: ["image/png"]}), (req, res, next) => {
+router.post('/', bodyParser.raw({type: ["image/png"], limit: ['10mb']}), (req, res) => {
     try {
         if ( req.app.get('state') === STATE.READY ||
             req.app.get('state') === STATE.GOAL) {
@@ -28,7 +28,7 @@ router.post('/', bodyParser.raw({type: ["image/png"]}), (req, res, next) => {
             );
             return
         }
-        if (req.get('Content-Type') === 'image/png') {
+        if (req.get('Content-Type') !== 'image/png') {
             res.header('Content-Type', 'application/json; charset=utf-8')
             res.status(400).json(
                 {
@@ -38,7 +38,7 @@ router.post('/', bodyParser.raw({type: ["image/png"]}), (req, res, next) => {
             );
             return
         }
-        if (req.body === '{}') {
+        if (req.body.length === 0) {
             res.header('Content-Type', 'application/json; charset=utf-8')
             res.status(400).json(
                 {
@@ -48,10 +48,28 @@ router.post('/', bodyParser.raw({type: ["image/png"]}), (req, res, next) => {
             );
             return
         }
-        fs.writeFile('image.png', req.body, (error) => {
-            if (error) {
-                throw error;
-            }
+        const now = new Date();
+        const date = now.getFullYear() 
+            + ('0' + (now.getMonth() + 1)).slice(-2) 
+            + ('0' + now.getDate()).slice(-2)
+            + ('0' + now.getHours()).slice(-2)
+            + ('0' + now.getMinutes()).slice(-2)
+            + ('0' + now.getSeconds()).slice(-2)
+        const directoryPath = `${TEMP_DIR}/${id}`    
+        const path = `${TEMP_DIR}/${id}/${id}_${date}.png`
+        if(!fs.existsSync(directoryPath)){
+            fs.mkdir(directoryPath, (err) => {
+                if (err) { throw err; }
+                fs.chmodSync(directoryPath, 0o777,  (err) => {
+                    if (err) { throw err; }
+                });
+            });
+        }
+        fs.writeFile(path, req.body, 'binary', (err) => {
+            if (err) { throw err; }
+            fs.chmodSync(path, 0o777,  (err) => {
+                if (err) { throw err; }
+            });
         });
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(201).json({status: 'Created'});
