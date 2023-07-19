@@ -17,8 +17,8 @@ router.post('/', bodyParser.raw({type: ["image/png"]}), (req, res, next) => {
             );
             return
         }
-        const teamId = req.query.teamId
-        if (teamId === '') {
+        const id = req.query.id
+        if (id === '') {
             res.header('Content-Type', 'application/json; charset=utf-8')
             res.status(400).json(
                 {
