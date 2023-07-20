@@ -36,16 +36,6 @@ router.post('/', bodyParser.raw({type: ["image/png"], limit: ['10mb']}), (req, r
             );
             return
         }
-        if (req.body.length === 0) {
-            res.header('Content-Type', 'application/json; charset=utf-8')
-            res.status(400).json(
-                {
-                    status: 'Bad Request',
-                    message: 'No data in request body',
-                }
-            );
-            return
-        }
         const now = new Date();
         const date = now.getFullYear() 
             + ('0' + (now.getMonth() + 1)).slice(-2) 
