@@ -16,6 +16,7 @@ app.use('/snap', snap);
 app.use('/train', train);
 app.use('/matchmaker', matchmaker);
 app.set('state', STATE.UNDEFINDED);
+app.set('allowOpReqToTrain', true);
 
 // 一時フォルダの初期化
 if(fs.existsSync(TEMP_DIR)){

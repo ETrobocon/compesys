@@ -6,9 +6,7 @@ const { STATE, TEMP_DIR } = require('../constants');
 
 router.post('/', bodyParser.raw({type: ["image/png"], limit: ['10mb']}), (req, res) => {
     try {
-        if ( req.app.get('state') === STATE.READY ||
-            req.app.get('state') === STATE.GOAL) {
-            
+        if (!req.app.get('allowOpReqToTrain')) {       
             res.status(403).json(
                 {
                     status: 'Forbidden',
