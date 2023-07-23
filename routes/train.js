@@ -14,7 +14,7 @@ router.get('/', (req, res, next) => {
                     message: 'Request not currently allowed',
                 }
             );
-            return
+            return;
         }   
 
         // TODO: Iot列車からデータを取得する
@@ -51,7 +51,7 @@ router.get('/', (req, res, next) => {
                 status: 'Internal Server Error'
             }
         );
-        return 
+        return;
     }
 });
 
@@ -89,7 +89,7 @@ router.put('/', (req, res, next) => {
                 status: 'OK',
             }
         );
-        return
+        return;
     } catch (error) {
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(500).json(
@@ -97,7 +97,7 @@ router.put('/', (req, res, next) => {
                 status: 'Internal Server Error',
             }
         );
-        return 
+        return; 
     }
 });
 

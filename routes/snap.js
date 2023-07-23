@@ -17,7 +17,7 @@ router.post('/', bodyParser.raw({type: ["image/png"], limit: ['10mb']}), (req, r
             );
             return;
         }
-        const id = req.query.id
+        const id = req.query.id;
         if (id === '') {
             res.header('Content-Type', 'application/json; charset=utf-8')
             res.status(400).json(
@@ -26,7 +26,7 @@ router.post('/', bodyParser.raw({type: ["image/png"], limit: ['10mb']}), (req, r
                     message: 'ID not specified or not numeric',
                 }
             );
-            return
+            return;
         }
         if (req.get('Content-Type') !== 'image/png') {
             res.header('Content-Type', 'application/json; charset=utf-8')
@@ -36,7 +36,7 @@ router.post('/', bodyParser.raw({type: ["image/png"], limit: ['10mb']}), (req, r
                     message: 'Unexpected content type',
                 }
             );
-            return
+            return;
         }
         const now = new Date();
         const date = now.getFullYear() 
@@ -63,7 +63,7 @@ router.post('/', bodyParser.raw({type: ["image/png"], limit: ['10mb']}), (req, r
         });
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(201).json({status: 'Created'});
-        return
+        return;
     } catch (error) {
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(500).json(
@@ -71,7 +71,7 @@ router.post('/', bodyParser.raw({type: ["image/png"], limit: ['10mb']}), (req, r
                 status: 'Internal Server Error'
             }
         );
-        return
+        return;
     }
 });
 
