@@ -63,6 +63,28 @@ const GATT_PROFILE = {
 
 noble.characteristics = GATT_PROFILE.services.xiao.characteristics;
 noble.servicesDiscovered = false;
+noble.inbox = {
+  'accelerometer': {
+    'timestamp': 0,
+    'x': 0,
+    'y': 0,
+    'z': 0
+  },
+  'gyroscope': {
+    'timestamp': 0,
+    'x': 0,
+    'y': 0,
+    'z': 0
+  },
+  'temperature': {
+    'timestamp': 0,
+    'value': 0
+  },
+  'voltage': {
+    'timestamp': 0,
+    'value': 0
+  }
+}
 
 noble.on('stateChange', async (state) => {
   console.log('[noble]onStateChange: ' + state);
@@ -98,7 +120,21 @@ noble.on('discover', async (peripheral) => {
           console.log('[noble]subscribe: ' + key);
           await instance.subscribeAsync();
           instance.on('data', async (data, isNotification) => {
-            console.log('[' + key + ']data: ' + data.toString('hex'));
+            let dv = new DataView(data.buffer);
+            noble.inbox[key].timestamp = dv.getUint32(0, true);
+            switch (key) {
+              case 'accelerometer':
+              case 'gyroscope':
+                noble.inbox[key].x = dv.getFloat32(4, true);
+                noble.inbox[key].y = dv.getFloat32(8, true);
+                noble.inbox[key].z = dv.getFloat32(12, true);
+              break;
+
+              case 'temperature':
+              case 'voltage':
+                noble.inbox[key].value = dv.getFloat32(4, true);
+              break;
+            }
           });
         }
       }

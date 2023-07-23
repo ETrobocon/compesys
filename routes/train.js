@@ -18,8 +18,15 @@ router.get('/', (req, res, next) => {
         }   
 
         // TODO: Iot列車からデータを取得する
+        const accel = iottrain.inbox.accelerometer;
+        const gyro = iottrain.inbox.gyroscope;
+        const temp = iottrain.inbox.temperature;
+        const volt = iottrain.inbox.voltage;
 
-
+        console.log("accel@" + accel.timestamp + ": " + accel.x + ", " + accel.y + ", " + accel.z);
+        console.log(" gyro@" + gyro.timestamp + ": " + gyro.x + ", " + gyro.y + ", " + gyro.z);
+        console.log(" temp@" + temp.timestamp + ": " + temp.value + "℃");
+        console.log(" volt@" + volt.timestamp + ": " + volt.value + "V");
 
         const param = {
             'accel': {
