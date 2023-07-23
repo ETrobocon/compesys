@@ -75,13 +75,12 @@ router.put('/', (req, res, next) => {
                     message: 'pwm not specified or out of range',
                 }
             );
-            return
+            return;
         }
 
-        // TODO: Iot列車のPWMを設定する
-
-
-
+        const date = new Date();
+        iottrain.inbox.pwm.timestamp = date.getTime();
+        iottrain.inbox.pwm.value = pwm;
 
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(200).json(

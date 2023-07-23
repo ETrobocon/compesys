@@ -83,6 +83,10 @@ noble.inbox = {
   'voltage': {
     'timestamp': 0,
     'value': 0
+  },
+  'pwm': {
+    'timestamp': 0,
+    'value': 0
   }
 }
 
