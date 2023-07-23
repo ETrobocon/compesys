@@ -6,14 +6,16 @@ const { STATE, TEMP_DIR } = require('../constants');
 
 router.post('/', bodyParser.raw({type: ["image/png"], limit: ['10mb']}), (req, res) => {
     try {
-        if (!req.app.get('allowOpReqToTrain')) {       
+        if ( req.app.get('state') === STATE.READY ||
+            req.app.get('state') === STATE.GOAL) {
+            
             res.status(403).json(
                 {
                     status: 'Forbidden',
                     message: 'Request not currently allowed',
                 }
             );
-            return
+            return;
         }
         const id = req.query.id
         if (id === '') {

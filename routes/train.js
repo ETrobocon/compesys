@@ -57,16 +57,14 @@ router.get('/', (req, res, next) => {
 
 router.put('/', (req, res, next) => {
     try {
-        if ( req.app.get('state') === STATE.READY ||
-            req.app.get('state') === STATE.GOAL) {
-            
+        if (!req.app.get('allowOpReqToTrain')) {       
             res.status(403).json(
                 {
                     status: 'Forbidden',
                     message: 'Request not currently allowed',
                 }
             );
-            return
+            return;
         }
         const pwm = Number(req.query.pwm)
         if (pwm === NaN || !(pwm >= 0 && pwm <= 100)) {
