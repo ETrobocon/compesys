@@ -30,16 +30,16 @@ router.get('/', (req, res, next) => {
 
         const param = {
             'accel': {
-                'x': '', 
-                'y': '',
-                'z': '',
+                'x': accel.x.toString(), 
+                'y': accel.y.toString(),
+                'z': accel.z.toString(),
             },
             'gyro': {
-                'x': '', 
-                'y': '',
-                'z': '',
+                'x': gyro.x.toString(), 
+                'y': gyro.y.toString(),
+                'z': gyro.z.toString(),
             },
-            'volt': '',
+            'volt': volt.value.toString(),
         };
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.send(param);
