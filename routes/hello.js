@@ -8,6 +8,7 @@ router.get('/', (req, res, next) => {
         res.send(param);
         return;
     } catch (error) {
+        console.log(error);
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(500).json(
             {

@@ -65,6 +65,7 @@ router.post('/', bodyParser.raw({type: ["image/png"], limit: ['10mb']}), (req, r
         res.status(201).json({status: 'Created'});
         return;
     } catch (error) {
+        console.log(error);
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(500).json(
             {

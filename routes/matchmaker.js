@@ -33,6 +33,7 @@ router.put('/state/:trigger', (req, res, next) => {
         );
         return
     } catch (error) {
+        console.log(error);
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(500).json(
             {
@@ -66,6 +67,7 @@ router.get('/image/:id', (req, res, next) => {
             return
         });
     } catch (error) {
+        console.log(error);
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(500).json(
             {
