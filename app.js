@@ -18,13 +18,7 @@ app.use('/matchmaker', matchmaker);
 app.set('state', STATE.UNDEFINDED);
 app.set('allowOpReqToTrain', true);
 
-await initialize();
-
-const server = app.listen(process.env.LISTEN_PORT, () => {
-    console.log("Node.js is listening to PORT:" + server.address().port);
-});
-
-const initialize = async () => {
+(() => {
     if(fs.existsSync(TEMP_DIR)){
         const stdout = execSync(`rm -rf ${TEMP_DIR}/*`);
     } else {
@@ -35,4 +29,9 @@ const initialize = async () => {
             });
         });
     }
-}
+})
+
+const server = app.listen(process.env.LISTEN_PORT, () => {
+    console.log("Node.js is listening to PORT:" + server.address().port);
+});
+
