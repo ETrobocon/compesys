@@ -18,19 +18,21 @@ app.use('/matchmaker', matchmaker);
 app.set('state', STATE.UNDEFINDED);
 app.set('allowOpReqToTrain', true);
 
-// 一時フォルダの初期化
-if(fs.existsSync(TEMP_DIR)){
-    const stdout = execSync(`rm -rf ${TEMP_DIR}/*`);
-    console.log(`stdout: ${stdout.toString()}`)
-} else {
-    fs.mkdir(TEMP_DIR, { mode: 0o777 }, (err) => {
-        if (err) { throw err; }
-        fs.chmodSync(TEMP_DIR, 0o777,  (err) => {
-            if (err) { throw err; }
-        });
-    });
-}
+await initialize();
 
 const server = app.listen(process.env.LISTEN_PORT, () => {
     console.log("Node.js is listening to PORT:" + server.address().port);
 });
+
+const initialize = async () => {
+    if(fs.existsSync(TEMP_DIR)){
+        const stdout = execSync(`rm -rf ${TEMP_DIR}/*`);
+    } else {
+        fs.mkdir(TEMP_DIR, { mode: 0o777 }, (err) => {
+            if (err) { throw err; }
+            fs.chmodSync(TEMP_DIR, 0o777,  (err) => {
+                if (err) { throw err; }
+            });
+        });
+    }
+}
