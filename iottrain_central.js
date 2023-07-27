@@ -132,12 +132,12 @@ noble.on('discover', async (peripheral) => {
                 noble.inbox[key].x = dv.getFloat32(4, true);
                 noble.inbox[key].y = dv.getFloat32(8, true);
                 noble.inbox[key].z = dv.getFloat32(12, true);
-              break;
+                break;
 
               case 'temperature':
               case 'voltage':
                 noble.inbox[key].value = dv.getFloat32(4, true);
-              break;
+                break;
             }
           });
         }
@@ -165,7 +165,12 @@ noble.on('discover', async (peripheral) => {
               }
             }
           }
-          noble.servicesDiscovered = true;
+          for (const key in noble.characteristics) {
+            if (noble.characteristics[key].instance !== undefined) {
+              noble.servicesDiscovered = true;
+            }
+          }
+          // noble.servicesDiscovered = true;
         });
 
         await services[i].discoverIncludedServicesAsync();
