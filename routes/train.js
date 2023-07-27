@@ -110,7 +110,6 @@ const getAccelerometer = () => {
                 return reject(error)
             }    
             return resolve(data)
-            
         })
     }).then(data => {
         iottrain.inbox["accelerometer"].x = data.readFloatLE(4);
@@ -119,6 +118,10 @@ const getAccelerometer = () => {
         return;
     }).catch(error => {
         console.log(error);
+        iottrain.inbox["accelerometer"].x = null;
+        iottrain.inbox["accelerometer"].y = null;
+        iottrain.inbox["accelerometer"].z = null;
+        return;
     })
   }
   
@@ -137,6 +140,10 @@ const getGyroscope = () => {
         return;
     }).catch(error => {
         console.log(error);
+        iottrain.inbox["gyroscope"].x = null;
+        iottrain.inbox["gyroscope"].y = null;
+        iottrain.inbox["gyroscope"].z = null;
+        return;
     })
 }
   
@@ -153,6 +160,8 @@ const getVoltage = () => {
         return;
     }).catch(error => {
         console.log(error);
+        iottrain.inbox["voltage"].value = null;
+        return;
     })
 }
   
