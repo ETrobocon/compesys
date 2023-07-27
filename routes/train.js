@@ -61,7 +61,7 @@ router.get('/', async(req, res, next) => {
     }
 });
 
-router.put('/', (req, res, next) => {
+router.put('/', async(req, res, next) => {
     try {
         if (!req.app.get('allowOpReqToTrain')) {       
             res.status(403).json(
@@ -83,6 +83,8 @@ router.put('/', (req, res, next) => {
             );
             return;
         }
+
+        await setVoltage(pwm);
 
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(200).json(
@@ -107,9 +109,9 @@ const getAccelerometer = () => {
     return new Promise((resolve, reject) => {
         iottrain.characteristics["accelerometer"].instance.read((error, data) => {
             if (error !== null) {
-                return reject(error)
+                return reject(error);
             }    
-            return resolve(data)
+            return resolve(data);
         })
     }).then(data => {
         iottrain.inbox["accelerometer"].x = data.readFloatLE(4);
@@ -129,9 +131,9 @@ const getGyroscope = () => {
     return new Promise((resolve, reject) => {
         iottrain.characteristics["gyroscope"].instance.read((error, data) => {
             if (error !== null) {
-                return reject(error)
+                return reject(error);
             }
-            return resolve(data)
+            return resolve(data);
         });
     }).then(data => {
         iottrain.inbox["gyroscope"].x = data.readFloatLE(4);
@@ -151,9 +153,9 @@ const getVoltage = () => {
     return new Promise((resolve, reject) => {
         iottrain.characteristics["voltage"].instance.read((error, data) => {
             if (error !== null) {
-                return reject(error)
+                return reject(error);
             }
-            return resolve(data)
+            return resolve(data);
         });
     }).then(data =>{
         iottrain.inbox["voltage"].value = data.readFloatLE(4);
@@ -164,5 +166,22 @@ const getVoltage = () => {
         return;
     })
 }
-  
+
+const setVoltage = (pwm) => {
+    return new Promise((resolve, reject) => {
+        iottrain.characteristics["pwm"].instance.write(new Buffer.from([pwm]), false, (error) => {
+            if (error !== null) {
+                return reject(error);
+            }
+            return resolve();
+        });
+    }).then(() =>{
+        return;
+    }).catch(error => {
+        console.log(error);
+        iottrain.inbox["voltage"].value = null;
+        return;
+    })
+}
+
 module.exports = router;
