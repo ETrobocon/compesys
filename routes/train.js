@@ -50,6 +50,7 @@ router.get('/', async(req, res, next) => {
         res.send(param);
         return
     } catch (error) {
+        console.log(error);
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(500).json(
             {
@@ -105,7 +106,11 @@ router.put('/', (req, res, next) => {
 const getAccelerometer = () => {
     return new Promise((resolve, reject) => {
         iottrain.characteristics["accelerometer"].instance.read((error, data) => {
+            if (error !== null) {
+                return reject(error)
+            }    
             return resolve(data)
+            
         })
     }).then(data => {
         iottrain.inbox["accelerometer"].x = data.readFloatLE(4);
@@ -120,6 +125,9 @@ const getAccelerometer = () => {
 const getGyroscope = () => {
     return new Promise((resolve, reject) => {
         iottrain.characteristics["gyroscope"].instance.read((error, data) => {
+            if (error !== null) {
+                return reject(error)
+            }
             return resolve(data)
         });
     }).then(data => {
@@ -135,6 +143,9 @@ const getGyroscope = () => {
 const getVoltage = () => {
     return new Promise((resolve, reject) => {
         iottrain.characteristics["voltage"].instance.read((error, data) => {
+            if (error !== null) {
+                return reject(error)
+            }
             return resolve(data)
         });
     }).then(data =>{
