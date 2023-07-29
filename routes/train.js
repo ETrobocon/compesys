@@ -53,7 +53,6 @@ router.get('/', async(req, res, next) => {
         return
     } catch (error) {
         loggerChild.error(error);
-        console.log(error);
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(500).json(
             {
@@ -137,7 +136,7 @@ const getAccelerometer = () => {
         iottrain.inbox["accelerometer"].z = data.readFloatLE(12);
         return;
     }).catch(error => {
-        console.log(error);
+        loggerChild.error(error);
         iottrain.inbox["accelerometer"].x = null;
         iottrain.inbox["accelerometer"].y = null;
         iottrain.inbox["accelerometer"].z = null;
@@ -159,7 +158,7 @@ const getGyroscope = () => {
         iottrain.inbox["gyroscope"].z = data.readFloatLE(12);
         return;
     }).catch(error => {
-        console.log(error);
+        loggerChild.error(error);
         iottrain.inbox["gyroscope"].x = null;
         iottrain.inbox["gyroscope"].y = null;
         iottrain.inbox["gyroscope"].z = null;
@@ -179,7 +178,7 @@ const getVoltage = () => {
         iottrain.inbox["voltage"].value = data.readFloatLE(4);
         return;
     }).catch(error => {
-        console.log(error);
+        loggerChild.error(error);
         iottrain.inbox["voltage"].value = null;
         return;
     })
