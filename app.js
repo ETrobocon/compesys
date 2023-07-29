@@ -22,18 +22,16 @@ app.use('/matchmaker', matchmaker);
 app.set('state', STATE.UNDEFINDED);
 app.set('allowOpReqToTrain', true);
 
-(() => {
-    if(fs.existsSync(TEMP_DIR)){
-        execSync(`rm -rf ${TEMP_DIR}/*`);
-    } else {
-        fs.mkdir(TEMP_DIR, { mode: 0o777 }, (err) => {
+if(fs.existsSync(TEMP_DIR)){
+    execSync(`rm -rf ${TEMP_DIR}/*`);
+} else {
+    fs.mkdir(TEMP_DIR, { mode: 0o777 }, (err) => {
+        if (err) { throw err; }
+        fs.chmodSync(TEMP_DIR, 0o777,  (err) => {
             if (err) { throw err; }
-            fs.chmodSync(TEMP_DIR, 0o777,  (err) => {
-                if (err) { throw err; }
-            });
         });
-    }
-})
+    });
+}
 
 loggerChild.info('Initialization: completion');
 
