@@ -113,7 +113,7 @@ noble.on('discover', async (peripheral) => {
     noble.servicesDiscovered = false;
     peripheral.connect();
 
-    peripheral.on('connect', async function() {
+    peripheral.once('connect', async function() {
       console.log('[noble]connected.');
       await this.discoverServicesAsync();
       await waitForDiscover();
@@ -124,56 +124,56 @@ noble.on('discover', async (peripheral) => {
           console.log('[noble]subscribe: ' + key);
           await instance.subscribeAsync();
           instance.on('data', async (data, isNotification) => {
-            let dv = new DataView(data.buffer);
-            noble.inbox[key].timestamp = dv.getUint32(0, true);
-            switch (key) {
-              case 'accelerometer':
-              case 'gyroscope':
-                noble.inbox[key].x = dv.getFloat32(4, true);
-                noble.inbox[key].y = dv.getFloat32(8, true);
-                noble.inbox[key].z = dv.getFloat32(12, true);
-                break;
+            //console.log(data);
+            //console.log(isNotification);
+            // let dv = new DataView(data.buffer);
+            // noble.inbox[key].timestamp = dv.getUint32(0, true);
+            // switch (key) {
+            //   case 'accelerometer':
+            //   case 'gyroscope':
+            //     noble.inbox[key].x = dv.getFloat32(4, true);
+            //     noble.inbox[key].y = dv.getFloat32(8, true);
+            //     noble.inbox[key].z = dv.getFloat32(12, true);
+            //     break;
 
-              case 'temperature':
-              case 'voltage':
-                noble.inbox[key].value = dv.getFloat32(4, true);
-                break;
-            }
+            //   case 'temperature':
+            //   case 'voltage':
+            //     noble.inbox[key].value = dv.getFloat32(4, true);
+            //     break;
+            // }
           });
         }
       }
     });
 
-    peripheral.on('disconnect', async function() {
+    peripheral.once('disconnect', async function() {
       console.log('[noble]disconnected.');
       await noble.startScanningAsync();
     });
 
-    peripheral.on('servicesDiscover', async (services) => {
+    peripheral.once('servicesDiscover', async (services) => {
       console.log('[noble]discovering services');
       for (i = 0; i < services.length; i++) {
-        services[i].on('includedServicesDiscover', async function() {
-          await this.discoverCharacteristicsAsync();
-        });
+        if (services[i].uuid.toUpperCase() === GATT_PROFILE.services.xiao.uuid.replace(/-/g, "")) {
+          services[i].once('includedServicesDiscover', async function() {
+            console.log('[noble]discovering includedServices');
+            await this.discoverCharacteristicsAsync();
+          });
 
-        services[i].on('characteristicsDiscover', async (characteristics) => {
-          console.log('[noble]discovering characteristics');
-          for (j = 0; j < characteristics.length; j++) {
-            for (const key in noble.characteristics) {
-              if (characteristics[j].uuid.toUpperCase() === noble.characteristics[key].uuid.replace(/-/g, "")) {
-                noble.characteristics[key].instance = characteristics[j];
+          services[i].once('characteristicsDiscover', async (characteristics) => {
+            console.log('[noble]discovering characteristics');
+            for (j = 0; j < characteristics.length; j++) {
+              for (const key in noble.characteristics) {
+                if (characteristics[j].uuid.toUpperCase() === noble.characteristics[key].uuid.replace(/-/g, "")) {
+                  noble.characteristics[key].instance = characteristics[j];
+                }
               }
             }
-          }
-          for (const key in noble.characteristics) {
-            if (noble.characteristics[key].instance !== undefined) {
-              noble.servicesDiscovered = true;
-            }
-          }
-          // noble.servicesDiscovered = true;
-        });
+            noble.servicesDiscovered = true;
+          });
 
-        await services[i].discoverIncludedServicesAsync();
+          await services[i].discoverIncludedServicesAsync();
+        }
       }
     });
   }
