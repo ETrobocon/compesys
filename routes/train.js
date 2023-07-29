@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { STATE } = require('../constants');
 const iottrain = require('../iottrain_central');
+const { logger } = require('../logger.js');
+const loggerChild = logger.child({ domain: 'train' })
 
 router.get('/', async(req, res, next) => {
     try {
@@ -50,6 +52,7 @@ router.get('/', async(req, res, next) => {
         res.send(param);
         return
     } catch (error) {
+        loggerChild.error(error);
         console.log(error);
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(500).json(
@@ -57,6 +60,9 @@ router.get('/', async(req, res, next) => {
                 status: 'Internal Server Error'
             }
         );
+        return;
+    } finally {
+        loggerChild.info(req.method + ' ' + req.originalUrl + ' code: ' + res.statusCode);
         return;
     }
 });
@@ -84,17 +90,26 @@ router.put('/', async(req, res, next) => {
             return;
         }
 
-        await setVoltage(pwm);
+        const err = await setPWM(pwm);
 
         res.header('Content-Type', 'application/json; charset=utf-8')
-        res.status(200).json(
-            {
-                status: 'OK',
-            }
-        );
+        if (err == null) {
+            res.status(200).json(
+                {
+                    status: 'OK',
+                }
+            );
+        } else {
+            loggerChild.error(err)
+            res.status(500).json(
+                {
+                    status: 'Internal Server Error',
+                }
+            );
+        }
         return;
     } catch (error) {
-        console.log(error)
+        loggerChild.error(error);
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(500).json(
             {
@@ -102,6 +117,9 @@ router.put('/', async(req, res, next) => {
             }
         );
         return; 
+    } finally {
+        loggerChild.info(req.method + ' ' + req.originalUrl + ' code: ' + res.statusCode);
+        return;
     }
 });
 
@@ -167,7 +185,7 @@ const getVoltage = () => {
     })
 }
 
-const setVoltage = (pwm) => {
+const setPWM = (pwm) => {
     return new Promise((resolve, reject) => {
         iottrain.characteristics["pwm"].instance.write(new Buffer.from([pwm]), false, (error) => {
             if (error !== null) {
@@ -180,7 +198,7 @@ const setVoltage = (pwm) => {
     }).catch(error => {
         console.log(error);
         iottrain.inbox["voltage"].value = null;
-        return;
+        return error;
     })
 }
 

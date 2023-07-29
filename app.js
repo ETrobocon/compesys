@@ -2,9 +2,13 @@ require('dotenv').config()
 const fs = require('fs');
 const { execSync } = require('child_process')
 const express = require('express');
-const app = express();
 
+const app = express();
+const { logger } = require('./logger.js');
+const loggerChild = logger.child({ domain: 'app' })
 const { STATE, TEMP_DIR } = require('./constants');
+
+loggerChild.info('Initialization: start');
 
 const hello = require('./routes/hello');
 const snap = require('./routes/snap');
@@ -20,7 +24,7 @@ app.set('allowOpReqToTrain', true);
 
 (() => {
     if(fs.existsSync(TEMP_DIR)){
-        const stdout = execSync(`rm -rf ${TEMP_DIR}/*`);
+        execSync(`rm -rf ${TEMP_DIR}/*`);
     } else {
         fs.mkdir(TEMP_DIR, { mode: 0o777 }, (err) => {
             if (err) { throw err; }
@@ -31,7 +35,9 @@ app.set('allowOpReqToTrain', true);
     }
 })
 
+loggerChild.info('Initialization: completion');
+
 const server = app.listen(process.env.LISTEN_PORT, () => {
-    console.log("Node.js is listening to PORT:" + server.address().port);
+    loggerChild.info("server listening on PORT:" + server.address().port);
 });
 

@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const { logger } = require('../logger.js');
+const loggerChild = logger.child({ domain: 'hello' })
 
 router.get('/', (req, res, next) => {
     try {
@@ -8,14 +10,17 @@ router.get('/', (req, res, next) => {
         res.send(param);
         return;
     } catch (error) {
-        console.log(error);
+        loggerChild.error(error);
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(500).json(
             {
                 status: 'Internal Server Error'
             }
         );
-        return
+        return;
+    } finally {
+        loggerChild.info(req.method + ' ' + req.originalUrl + ' code: ' + res.statusCode);
+        return;
     }
 });
 

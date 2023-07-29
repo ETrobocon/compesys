@@ -3,10 +3,12 @@ const fs = require('fs');
 const express = require('express');
 const router = express.Router();
 const { STATE, TEMP_DIR } = require('../constants');
+const { logger } = require('../logger.js');
+const loggerChild = logger.child({ domain: 'matchmaker' })
 
 router.put('/state/:trigger', (req, res, next) => {
     try {
-        const trigger = req.params.trigger
+        const trigger = req.params.trigger;
         if (trigger === 'ready') {
             req.app.set('state', STATE.READY);
             req.app.set('allowOpReqToTrain', false);
@@ -25,22 +27,24 @@ router.put('/state/:trigger', (req, res, next) => {
             req.app.set('allowOpReqToTrain', false);
         }
         
-        res.header('Content-Type', 'application/json; charset=utf-8')
+        res.header('Content-Type', 'application/json; charset=utf-8');
         res.status(200).json(
             {
                 status: 'OK',
             }
         );
-        return
+        return;
     } catch (error) {
-        console.log(error);
+        loggerChild.error(error);
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(500).json(
             {
                 status: 'Internal Server Error'
             }
         );
-        return 
+    } finally {
+        loggerChild.info(req.method + ' ' + req.originalUrl + ' code: ' + res.statusCode);
+        return;
     }
 });
 
@@ -64,17 +68,20 @@ router.get('/image/:id', (req, res, next) => {
             res.header('Content-Type', 'application/zip;')
             res.header('Content-Disposition', 'attachment;')
             res.status(200).sendFile(zipPath);           
-            return
+            return;
         });
     } catch (error) {
-        console.log(error);
+        loggerChild.error(error);
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(500).json(
             {
                 status: 'Internal Server Error'
             }
         );
-        return 
+        return;
+    } finally {
+        loggerChild.info(req.method + ' ' + req.originalUrl + ' code: ' + res.statusCode);
+        return;
     }
 });
 

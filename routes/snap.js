@@ -3,6 +3,8 @@ const fs = require("fs");
 const express = require('express');
 const router = express.Router();
 const { STATE, TEMP_DIR } = require('../constants');
+const { logger } = require('../logger.js');
+const loggerChild = logger.child({ domain: 'snap' })
 
 router.post('/', bodyParser.raw({type: ["image/png"], limit: ['10mb']}), (req, res) => {
     try {
@@ -65,13 +67,16 @@ router.post('/', bodyParser.raw({type: ["image/png"], limit: ['10mb']}), (req, r
         res.status(201).json({status: 'Created'});
         return;
     } catch (error) {
-        console.log(error);
+        loggerChild.error(error);
         res.header('Content-Type', 'application/json; charset=utf-8')
         res.status(500).json(
             {
                 status: 'Internal Server Error'
             }
         );
+        return;
+    } finally {
+        loggerChild.info(req.method + ' ' + req.originalUrl + ' code: ' + res.statusCode);
         return;
     }
 });
