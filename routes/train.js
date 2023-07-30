@@ -198,7 +198,7 @@ const setPWM = (pwm) => {
     }).then(() =>{
         return;
     }).catch(error => {
-        console.log(error);
+        loggerChild.error(error);
         iottrain.inbox["voltage"].value = null;
         return error;
     })

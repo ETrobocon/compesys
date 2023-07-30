@@ -1,4 +1,7 @@
 const noble = require('@abandonware/noble');
+const { logger } = require('./logger.js');
+const loggerChild = logger.child({ domain: 'iottrain_central' })
+
 const sleep = (msec) => new Promise(resolve => setTimeout(resolve, msec));
 
 // BLE peripheral GATT profile: XIAO side
@@ -91,18 +94,18 @@ noble.inbox = {
 }
 
 noble.on('stateChange', async (state) => {
-  console.log('[noble]onStateChange: ' + state);
+  loggerChild.info('[noble]onStateChange: ' + state);
   if (state === 'poweredOn') {
     await noble.startScanningAsync();
   }
 });
 
 noble.on('scanStart', () => {
-  console.log('[noble]Start scanning');
+  loggerChild.info('[noble]Start scanning');
 });
 
 noble.on('scanStop', () => {
-  console.log('[noble]Stop scanning');
+  loggerChild.info('[noble]Stop scanning');
 });
 
 noble.on('discover', async (peripheral) => {
@@ -113,20 +116,21 @@ noble.on('discover', async (peripheral) => {
       || 
       (process.env.MY_XIAO === '' && localName.startsWith("XIAO"))
     )) {        
+    loggerChild.info('[noble]discovered: ' + localName);
     await noble.stopScanningAsync();
     noble.servicesDiscovered = false;
     peripheral.connect();
 
     peripheral.once('connect', async function() {
-      console.log('[noble]connected.');
+      loggerChild.info('[noble]connected.');
       await this.discoverServicesAsync();
       await waitForDiscover();
       for (const key in noble.characteristics) {
         const characteristic = noble.characteristics[key];
         const instance = characteristic.instance;
         if (characteristic.isNotifiable) {
-          console.log('[noble]subscribe: ' + key);
-          await instance.subscribeAsync();
+          loggerChild.info('[noble]subscribe: ' + key);
+          instance.subscribeAsync();
           instance.on('data', async (data, isNotification) => {
             //console.log(data);
             //console.log(isNotification);
@@ -150,22 +154,22 @@ noble.on('discover', async (peripheral) => {
       }
     });
 
-    peripheral.once('disconnect', async function() {
-      console.log('[noble]disconnected.');
+    peripheral.once('disconnect', async () => {
+      loggerChild.info('[noble]disconnected.');
       await noble.startScanningAsync();
     });
 
     peripheral.once('servicesDiscover', async (services) => {
-      console.log('[noble]discovering services');
+      loggerChild.info('[noble]discovering services');
       for (i = 0; i < services.length; i++) {
         if (services[i].uuid.toUpperCase() === GATT_PROFILE.services.xiao.uuid.replace(/-/g, "")) {
           services[i].once('includedServicesDiscover', async function() {
-            console.log('[noble]discovering includedServices');
+            loggerChild.info('[noble]discovering includedServices');
             await this.discoverCharacteristicsAsync();
           });
 
           services[i].once('characteristicsDiscover', async (characteristics) => {
-            console.log('[noble]discovering characteristics');
+            loggerChild.info('[noble]discovering characteristics');
             for (j = 0; j < characteristics.length; j++) {
               for (const key in noble.characteristics) {
                 if (characteristics[j].uuid.toUpperCase() === noble.characteristics[key].uuid.replace(/-/g, "")) {
