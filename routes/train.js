@@ -176,6 +176,9 @@ const getVoltage = () => {
         });
     }).then(data =>{
         iottrain.inbox["voltage"].value = data.readFloatLE(4);
+        if (iottrain.inbox["voltage"].value <= 1.2) {
+            loggerChild.warn("battery voltage is low!! :" +  iottrain.inbox["voltage"].value + "V")
+        }
         return;
     }).catch(error => {
         loggerChild.error(error);
