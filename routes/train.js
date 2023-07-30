@@ -19,11 +19,11 @@ router.get('/', async(req, res, next) => {
             return;
         }   
  
-        await Promise.all([
-            getAccelerometer(),
-            getGyroscope(),
-            getVoltage(),
-        ]);
+        // await Promise.all([
+        //     getAccelerometer(),
+        //     getGyroscope(),
+        //     getVoltage(),
+        // ]);
 
         const accel = iottrain.inbox.accelerometer;
         const gyro = iottrain.inbox.gyroscope;

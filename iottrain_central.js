@@ -92,6 +92,7 @@ noble.inbox = {
     'value': 0
   }
 }
+noble.connected = false;
 
 noble.on('stateChange', async (state) => {
   loggerChild.info('[noble]onStateChange: ' + state);
@@ -122,6 +123,7 @@ noble.on('discover', async (peripheral) => {
     peripheral.connect();
 
     peripheral.once('connect', async function() {
+      noble.connected = true;
       loggerChild.info('[noble]connected.');
       await this.discoverServicesAsync();
       await waitForDiscover();
@@ -131,7 +133,7 @@ noble.on('discover', async (peripheral) => {
         if (characteristic.isNotifiable) {
           loggerChild.info('[noble]subscribe: ' + key);
           instance.subscribeAsync();
-          instance.on('data', async (data, isNotification) => {
+          //instance.on('data', async (data, isNotification) => {
             //console.log(data);
             //console.log(isNotification);
             // let dv = new DataView(data.buffer);
@@ -149,12 +151,14 @@ noble.on('discover', async (peripheral) => {
             //     noble.inbox[key].value = dv.getFloat32(4, true);
             //     break;
             // }
-          });
+          //});
         }
       }
+      loop();
     });
 
     peripheral.once('disconnect', async () => {
+      noble.connected = false;
       loggerChild.info('[noble]disconnected.');
       await noble.startScanningAsync();
     });
@@ -191,6 +195,85 @@ async function waitForDiscover() {
   while (!noble.servicesDiscovered) {
     await sleep(100);
   }
+}
+
+const loop = async() => {
+  while (true) {
+    if (!noble.connected) {
+      break;
+    }
+    await Promise.all([
+      getAccelerometer(),
+      getGyroscope(),
+      getVoltage(),
+    ]);
+    await sleep(100);
+  }
+}
+
+const getAccelerometer = () => {
+  return new Promise((resolve, reject) => {
+      noble.characteristics["accelerometer"].instance.read((error, data) => {
+          if (error !== null) {
+              return reject(error);
+          }    
+          return resolve(data);
+      })
+  }).then(data => {
+      noble.inbox["accelerometer"].x = data.readFloatLE(4);
+      noble.inbox["accelerometer"].y = data.readFloatLE(8);
+      noble.inbox["accelerometer"].z = data.readFloatLE(12);
+      return;
+  }).catch(error => {
+      loggerChild.error(error);
+      noble.inbox["accelerometer"].x = null;
+      noble.inbox["accelerometer"].y = null;
+      noble.inbox["accelerometer"].z = null;
+      return;
+  })
+}
+
+const getGyroscope = () => {
+  return new Promise((resolve, reject) => {
+    noble.characteristics["gyroscope"].instance.read((error, data) => {
+      if (error !== null) {
+          return reject(error);
+      }
+      return resolve(data);
+    });
+  }).then(data => {
+      noble.inbox["gyroscope"].x = data.readFloatLE(4);
+      noble.inbox["gyroscope"].y = data.readFloatLE(8);
+      noble.inbox["gyroscope"].z = data.readFloatLE(12);
+      return;
+  }).catch(error => {
+      loggerChild.error(error);
+      noble.inbox["gyroscope"].x = null;
+      noble.inbox["gyroscope"].y = null;
+      noble.inbox["gyroscope"].z = null;
+      return;
+  })
+}
+
+const getVoltage = () => {
+  return new Promise((resolve, reject) => {
+    noble.characteristics["voltage"].instance.read((error, data) => {
+      if (error !== null) {
+          return reject(error);
+      }
+      return resolve(data);
+    });
+  }).then(data =>{
+    noble.inbox["voltage"].value = data.readFloatLE(4);
+      if (noble.inbox["voltage"].value <= 1.2 && noble.inbox["voltage"].value > 0) {
+          loggerChild.warn("battery voltage is low!! :" +  noble.inbox["voltage"].value + "V")
+      }
+      return;
+  }).catch(error => {
+      loggerChild.error(error);
+      noble.inbox["voltage"].value = null;
+      return;
+  })
 }
 
 module.exports = noble;
