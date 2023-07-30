@@ -1,18 +1,20 @@
-const pino = require('pino')
+const pino = require("pino");
 
 module.exports.logger = pino({
-  level: 'info',
+  level: "info",
   transport: {
-    targets: [{
-        target: 'pino-pretty',
-        options: {}
-    },
-    { 
-        target: 'pino/file',
+    targets: [
+      {
+        target: "pino-pretty",
+        options: {},
+      },
+      {
+        target: "pino/file",
         options: {
-            destination: '/var/log/compesys/server.log',
-            mkdir: true
-        }
-    }]
-  }
-})
+          destination: "/var/log/compesys/server.log",
+          mkdir: true,
+        },
+      },
+    ],
+  },
+});
