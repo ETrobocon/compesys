@@ -107,8 +107,12 @@ noble.on('scanStop', () => {
 
 noble.on('discover', async (peripheral) => {
   let localName = peripheral.advertisement.localName;
-  if (localName && localName.startsWith("XIAO")) {        
-    console.log('[noble]discovered: ' + localName);
+  if (localName && 
+    (
+      (process.env.MY_XIAO !== '' && process.env.MY_XIAO === localName) 
+      || 
+      (process.env.MY_XIAO === '' && localName.startsWith("XIAO"))
+    )) {        
     await noble.stopScanningAsync();
     noble.servicesDiscovered = false;
     peripheral.connect();
