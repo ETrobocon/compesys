@@ -6,7 +6,7 @@ const express = require('express');
 const app = express();
 const { logger } = require('./logger.js');
 const loggerChild = logger.child({ domain: 'app' })
-const { STATE, TEMP_DIR } = require('./constants');
+const { STATE } = require('./constants');
 
 loggerChild.info('Initialization: start');
 
@@ -22,12 +22,12 @@ app.use('/matchmaker', matchmaker);
 app.set('state', STATE.UNDEFINDED);
 app.set('allowOpReqToTrain', true);
 
-if(fs.existsSync(TEMP_DIR)){
-    execSync(`rm -rf ${TEMP_DIR}/*`);
+if(fs.existsSync(process.env.TEMP_DIR)){
+    execSync(`rm -rf ${process.env.TEMP_DIR}/*`);
 } else {
-    fs.mkdir(TEMP_DIR, { mode: 0o777 }, (err) => {
+    fs.mkdir(process.env.TEMP_DIR, { mode: 0o777 }, (err) => {
         if (err) { throw err; }
-        fs.chmodSync(TEMP_DIR, 0o777,  (err) => {
+        fs.chmodSync(process.env.TEMP_DIR, 0o777,  (err) => {
             if (err) { throw err; }
         });
     });

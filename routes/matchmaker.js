@@ -2,7 +2,7 @@ const archiver = require('archiver');
 const fs = require('fs');
 const express = require('express');
 const router = express.Router();
-const { STATE, TEMP_DIR } = require('../constants');
+const { STATE } = require('../constants');
 const { logger } = require('../logger.js');
 const loggerChild = logger.child({ domain: 'matchmaker' })
 
@@ -52,8 +52,8 @@ router.get('/image/:id', (req, res, next) => {
     try {
         const id = req.params.id
 
-        const zipPath = `${TEMP_DIR}/${id}.zip`;
-        const targetDirectory = `${TEMP_DIR}/${id}`;
+        const zipPath = `${process.env.TEMP_DIR}/${id}.zip`;
+        const targetDirectory = `${process.env.TEMP_DIR}/${id}`;
 
         const archive = archiver.create('zip', {
             zlib: { level: 9 } // Sets the compression level.

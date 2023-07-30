@@ -2,7 +2,7 @@ const bodyParser = require('body-parser')
 const fs = require("fs");
 const express = require('express');
 const router = express.Router();
-const { STATE, TEMP_DIR } = require('../constants');
+const { STATE } = require('../constants');
 const { logger } = require('../logger.js');
 const loggerChild = logger.child({ domain: 'snap' })
 
@@ -47,8 +47,8 @@ router.post('/', bodyParser.raw({type: ["image/png"], limit: ['10mb']}), (req, r
             + ('0' + now.getHours()).slice(-2)
             + ('0' + now.getMinutes()).slice(-2)
             + ('0' + now.getSeconds()).slice(-2)
-        const directoryPath = `${TEMP_DIR}/${id}`    
-        const path = `${TEMP_DIR}/${id}/${id}_${date}.png`
+        const directoryPath = `${process.env.TEMP_DIR}/${id}`    
+        const path = `${process.env.TEMP_DIR}/${id}/${id}_${date}.png`
         if(!fs.existsSync(directoryPath)){
             fs.mkdir(directoryPath, (err) => {
                 if (err) { throw err; }
