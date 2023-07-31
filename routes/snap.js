@@ -68,16 +68,17 @@ router.post(
           }
         });
       });
+      res.header("Content-Type", "application/json; charset=utf-8");
       res.status(201).json({ status: "Created" });
       return;
     } catch (error) {
       loggerChild.error(error);
+      res.header("Content-Type", "application/json; charset=utf-8");
       res.status(500).json({
         status: "Internal Server Error",
       });
       return;
     } finally {
-      res.header("Content-Type", "application/json; charset=utf-8");
       loggerChild.info(
         req.method + " " + req.originalUrl + " code: " + res.statusCode
       );

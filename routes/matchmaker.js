@@ -26,17 +26,18 @@ router.put("/state/:trigger", (req, res, next) => {
       req.app.set("state", STATE.GOAL);
       req.app.set("allowOpReqToTrain", false);
     }
+    res.header("Content-Type", "application/json; charset=utf-8");
     res.status(200).json({
       status: "OK",
     });
     return;
   } catch (error) {
     loggerChild.error(error);
+    res.header("Content-Type", "application/json; charset=utf-8");
     res.status(500).json({
       status: "Internal Server Error",
     });
   } finally {
-    res.header("Content-Type", "application/json; charset=utf-8");
     loggerChild.info(
       req.method + " " + req.originalUrl + " code: " + res.statusCode
     );

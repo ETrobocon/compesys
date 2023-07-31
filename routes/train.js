@@ -11,6 +11,7 @@ router.get("/", async (req, res, next) => {
       req.app.get("state") === STATE.READY ||
       req.app.get("state") === STATE.GOAL
     ) {
+      res.header("Content-Type", "application/json; charset=utf-8");
       res.status(403).json({
         status: "Forbidden",
         message: "Request not currently allowed",
@@ -18,15 +19,8 @@ router.get("/", async (req, res, next) => {
       return;
     }
 
-    // await Promise.all([
-    //     getAccelerometer(),
-    //     getGyroscope(),
-    //     getVoltage(),
-    // ]);
-
     const accel = iottrain.inbox.accelerometer;
     const gyro = iottrain.inbox.gyroscope;
-    const temp = iottrain.inbox.temperature;
     const volt = iottrain.inbox.voltage;
 
     console.log(
@@ -50,16 +44,17 @@ router.get("/", async (req, res, next) => {
       },
       volt: volt.value,
     };
+    res.header("Content-Type", "application/json; charset=utf-8");
     res.send(param);
     return;
   } catch (error) {
     loggerChild.error(error);
+    res.header("Content-Type", "application/json; charset=utf-8");
     res.status(500).json({
       status: "Internal Server Error",
     });
     return;
   } finally {
-    res.header("Content-Type", "application/json; charset=utf-8");
     loggerChild.info(
       req.method + " " + req.originalUrl + " code: " + res.statusCode
     );
@@ -70,6 +65,7 @@ router.get("/", async (req, res, next) => {
 router.put("/", async (req, res, next) => {
   try {
     if (!req.app.get("allowOpReqToTrain")) {
+      res.header("Content-Type", "application/json; charset=utf-8");
       res.status(403).json({
         status: "Forbidden",
         message: "Request not currently allowed",
@@ -78,6 +74,7 @@ router.put("/", async (req, res, next) => {
     }
     const pwm = Number(req.query.pwm);
     if (pwm === NaN || !(pwm >= 0 && pwm <= 100)) {
+      res.header("Content-Type", "application/json; charset=utf-8");
       res.status(400).json({
         status: "Bad Request",
         message: "pwm not specified or out of range",
@@ -88,11 +85,13 @@ router.put("/", async (req, res, next) => {
     const err = await setPWM(pwm);
 
     if (err == null) {
+      res.header("Content-Type", "application/json; charset=utf-8");
       res.status(200).json({
         status: "OK",
       });
     } else {
       loggerChild.error(err);
+      res.header("Content-Type", "application/json; charset=utf-8");
       res.status(500).json({
         status: "Internal Server Error",
       });
@@ -100,12 +99,12 @@ router.put("/", async (req, res, next) => {
     return;
   } catch (error) {
     loggerChild.error(error);
+    res.header("Content-Type", "application/json; charset=utf-8");
     res.status(500).json({
       status: "Internal Server Error",
     });
     return;
   } finally {
-    res.header("Content-Type", "application/json; charset=utf-8");
     loggerChild.info(
       req.method + " " + req.originalUrl + " code: " + res.statusCode
     );
