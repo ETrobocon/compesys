@@ -199,7 +199,7 @@ noble.on("discover", async (peripheral) => {
   }
 });
 
-async function waitForDiscover() {
+const waitForDiscover = async () => {
   while (!noble.servicesDiscovered) {
     await sleep(100);
   }

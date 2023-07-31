@@ -30,19 +30,11 @@ router.get("/", async (req, res, next) => {
     const volt = iottrain.inbox.voltage;
 
     console.log(
-      "accel@" +
-        accel.timestamp +
-        ": " +
-        accel.x +
-        ", " +
-        accel.y +
-        ", " +
-        accel.z
+        "accel@" + accel.timestamp + ": " + accel.x + ", " + accel.y + ", " + accel.z
     );
     console.log(
       " gyro@" + gyro.timestamp + ": " + gyro.x + ", " + gyro.y + ", " + gyro.z
     );
-    console.log(" temp@" + temp.timestamp + ": " + temp.value + "℃");
     console.log(" volt@" + volt.timestamp + ": " + volt.value + "V");
 
     const param = {
@@ -58,17 +50,16 @@ router.get("/", async (req, res, next) => {
       },
       volt: volt.value,
     };
-    res.header("Content-Type", "application/json; charset=utf-8");
     res.send(param);
     return;
   } catch (error) {
     loggerChild.error(error);
-    res.header("Content-Type", "application/json; charset=utf-8");
     res.status(500).json({
       status: "Internal Server Error",
     });
     return;
   } finally {
+    res.header("Content-Type", "application/json; charset=utf-8");
     loggerChild.info(
       req.method + " " + req.originalUrl + " code: " + res.statusCode
     );
@@ -87,7 +78,6 @@ router.put("/", async (req, res, next) => {
     }
     const pwm = Number(req.query.pwm);
     if (pwm === NaN || !(pwm >= 0 && pwm <= 100)) {
-      res.header("Content-Type", "application/json; charset=utf-8");
       res.status(400).json({
         status: "Bad Request",
         message: "pwm not specified or out of range",
@@ -97,7 +87,6 @@ router.put("/", async (req, res, next) => {
 
     const err = await setPWM(pwm);
 
-    res.header("Content-Type", "application/json; charset=utf-8");
     if (err == null) {
       res.status(200).json({
         status: "OK",
@@ -111,12 +100,12 @@ router.put("/", async (req, res, next) => {
     return;
   } catch (error) {
     loggerChild.error(error);
-    res.header("Content-Type", "application/json; charset=utf-8");
     res.status(500).json({
       status: "Internal Server Error",
     });
     return;
   } finally {
+    res.header("Content-Type", "application/json; charset=utf-8");
     loggerChild.info(
       req.method + " " + req.originalUrl + " code: " + res.statusCode
     );
