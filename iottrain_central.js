@@ -93,6 +93,11 @@ noble.inbox = {
   },
 };
 noble.connected = false;
+noble.timer = {
+  accelerometer: 50,
+  gyroscope: 50,
+  voltage: 5000,
+};
 
 noble.on("stateChange", async (state) => {
   loggerChild.info("[noble]onStateChange: " + state);
@@ -206,12 +211,29 @@ const waitForDiscover = async () => {
 }
 
 const loop = async () => {
+  let accTimer = 0;
+  let gyroTimer = 0;
+  let voltageTimer = 0;
   while (true) {
     if (!noble.connected) {
       break;
     }
-    await Promise.all([getAccelerometer(), getGyroscope(), getVoltage()]);
-    await sleep(100);
+    if (accTimer > noble.timer.accelerometer) {
+      await getAccelerometer();
+      accTimer = 0;
+    }
+    if (gyroTimer > noble.timer.gyroscope) {
+      await getGyroscope();
+      gyroTimer = 0;
+    }
+    if (voltageTimer > noble.timer.voltage) {
+      await getVoltage();
+      voltageTimer = 0;
+    }
+    await sleep(10);
+    accTimer += 10;
+    gyroTimer += 10;
+    voltageTimer += 10;
   }
 };
 
@@ -279,14 +301,14 @@ const getVoltage = () => {
     .then((data) => {
       if (data.readFloatLE(4) !== 0) {
         noble.inbox["voltage"].timestamp = data.readFloatLE(0);
-      noble.inbox["voltage"].value = data.readFloatLE(4);
-      if (
-        noble.inbox["voltage"].value <= 1.2 &&
-        noble.inbox["voltage"].value > 0
-      ) {
-        loggerChild.warn(
-          "battery voltage is low!! :" + noble.inbox["voltage"].value + "V"
-        );
+        noble.inbox["voltage"].value = data.readFloatLE(4);
+        if (
+          noble.inbox["voltage"].value <= 1.2 &&
+          noble.inbox["voltage"].value > 0
+        ) {
+          loggerChild.warn(
+            "battery voltage is low!! :" + noble.inbox["voltage"].value + "V"
+          );
         }
       }
       return;
