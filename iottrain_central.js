@@ -225,6 +225,7 @@ const getAccelerometer = () => {
     });
   })
     .then((data) => {
+      noble.inbox["accelerometer"].timestamp = data.readFloatLE(0);
       noble.inbox["accelerometer"].x = data.readFloatLE(4);
       noble.inbox["accelerometer"].y = data.readFloatLE(8);
       noble.inbox["accelerometer"].z = data.readFloatLE(12);
@@ -232,6 +233,7 @@ const getAccelerometer = () => {
     })
     .catch((error) => {
       loggerChild.error(error);
+      noble.inbox["accelerometer"].timestamp = null;
       noble.inbox["accelerometer"].x = null;
       noble.inbox["accelerometer"].y = null;
       noble.inbox["accelerometer"].z = null;
@@ -249,6 +251,7 @@ const getGyroscope = () => {
     });
   })
     .then((data) => {
+      noble.inbox["gyroscope"].timestamp = data.readFloatLE(0);
       noble.inbox["gyroscope"].x = data.readFloatLE(4);
       noble.inbox["gyroscope"].y = data.readFloatLE(8);
       noble.inbox["gyroscope"].z = data.readFloatLE(12);
@@ -256,6 +259,7 @@ const getGyroscope = () => {
     })
     .catch((error) => {
       loggerChild.error(error);
+      noble.inbox["gyroscope"].timestamp = null;
       noble.inbox["gyroscope"].x = null;
       noble.inbox["gyroscope"].y = null;
       noble.inbox["gyroscope"].z = null;
@@ -273,6 +277,8 @@ const getVoltage = () => {
     });
   })
     .then((data) => {
+      if (data.readFloatLE(4) !== 0) {
+        noble.inbox["voltage"].timestamp = data.readFloatLE(0);
       noble.inbox["voltage"].value = data.readFloatLE(4);
       if (
         noble.inbox["voltage"].value <= 1.2 &&
@@ -281,11 +287,13 @@ const getVoltage = () => {
         loggerChild.warn(
           "battery voltage is low!! :" + noble.inbox["voltage"].value + "V"
         );
+        }
       }
       return;
     })
     .catch((error) => {
       loggerChild.error(error);
+      noble.inbox["voltage"].timestamp = null;
       noble.inbox["voltage"].value = null;
       return;
     });
