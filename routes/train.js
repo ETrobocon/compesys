@@ -5,7 +5,7 @@ const iottrain = require("../iottrain_central");
 const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "train" });
 
-router.get("/", async (req, res, next) => {
+router.get("/", async (req, res) => {
   try {
     if (
       req.app.get("state") === STATE.READY ||

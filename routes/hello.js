@@ -3,7 +3,7 @@ const router = express.Router();
 const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "hello" });
 
-router.get("/", (req, res, next) => {
+router.get("/", (req, res) => {
   try {
     res.header("Content-Type", "application/json; charset=utf-8");
     res.send({ message: "hello world" });

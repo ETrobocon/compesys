@@ -6,7 +6,7 @@ const { STATE } = require("../constants");
 const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "matchmaker" });
 
-router.put("/state/:trigger", (req, res, next) => {
+router.put("/state/:trigger", (req, res) => {
   try {
     const trigger = req.params.trigger;
     if (trigger === "ready") {
@@ -43,7 +43,7 @@ router.put("/state/:trigger", (req, res, next) => {
   }
 });
 
-router.get("/image/:id", (req, res, next) => {
+router.get("/image/:id", (req, res) => {
   try {
     const id = req.params.id;
 
