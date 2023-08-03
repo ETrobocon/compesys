@@ -46,19 +46,16 @@ router.get("/", async (req, res, next) => {
     };
     res.header("Content-Type", "application/json; charset=utf-8");
     res.send(param);
-    return;
   } catch (error) {
     loggerChild.error(error);
     res.header("Content-Type", "application/json; charset=utf-8");
     res.status(500).json({
       status: "Internal Server Error",
     });
-    return;
   } finally {
     loggerChild.info(
       req.method + " " + req.originalUrl + " code: " + res.statusCode
     );
-    return;
   }
 });
 

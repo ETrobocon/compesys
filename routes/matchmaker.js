@@ -30,7 +30,6 @@ router.put("/state/:trigger", (req, res, next) => {
     res.status(200).json({
       status: "OK",
     });
-    return;
   } catch (error) {
     loggerChild.error(error);
     res.header("Content-Type", "application/json; charset=utf-8");
@@ -41,7 +40,6 @@ router.put("/state/:trigger", (req, res, next) => {
     loggerChild.info(
       req.method + " " + req.originalUrl + " code: " + res.statusCode
     );
-    return;
   }
 });
 
@@ -65,7 +63,6 @@ router.get("/image/:id", (req, res, next) => {
       res.header("Content-Type", "application/zip;");
       res.header("Content-Disposition", "attachment;");
       res.status(200).sendFile(zipPath);
-      return;
     });
   } catch (error) {
     loggerChild.error(error);
@@ -73,12 +70,10 @@ router.get("/image/:id", (req, res, next) => {
     res.status(500).json({
       status: "Internal Server Error",
     });
-    return;
   } finally {
     loggerChild.info(
       req.method + " " + req.originalUrl + " code: " + res.statusCode
     );
-    return;
   }
 });
 
