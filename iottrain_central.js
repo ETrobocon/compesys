@@ -68,24 +68,24 @@ noble.characteristics = GATT_PROFILE.services.xiao.characteristics;
 noble.servicesDiscovered = false;
 noble.inbox = {
   accelerometer: {
-    timestamp: 0,
-    x: 0,
-    y: 0,
-    z: 0,
+    timestamp: null,
+    x: null,
+    y: null,
+    z: null,
   },
   gyroscope: {
-    timestamp: 0,
-    x: 0,
-    y: 0,
-    z: 0,
+    timestamp: null,
+    x: null,
+    y: null,
+    z: null,
   },
   temperature: {
     timestamp: 0,
     value: 0,
   },
   voltage: {
-    timestamp: 0,
-    value: 0,
+    timestamp: null,
+    value: null,
   },
   pwm: {
     timestamp: 0,
