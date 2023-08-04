@@ -26,13 +26,11 @@ router.put("/state/:trigger", (req, res) => {
       req.app.set("state", STATE.GOAL);
       req.app.set("allowOpReqToTrain", false);
     }
-    res.header("Content-Type", "application/json; charset=utf-8");
-    res.status(200).json({
+    res.json({
       status: "OK",
     });
   } catch (error) {
     loggerChild.error(error);
-    res.header("Content-Type", "application/json; charset=utf-8");
     res.status(500).json({
       status: "Internal Server Error",
     });
@@ -66,7 +64,6 @@ router.get("/image/:id", (req, res) => {
     });
   } catch (error) {
     loggerChild.error(error);
-    res.header("Content-Type", "application/json; charset=utf-8");
     res.status(500).json({
       status: "Internal Server Error",
     });

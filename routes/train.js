@@ -11,7 +11,6 @@ router.get("/", async (req, res) => {
       req.app.get("state") === STATE.READY ||
       req.app.get("state") === STATE.GOAL
     ) {
-      res.header("Content-Type", "application/json; charset=utf-8");
       res.status(403).json({
         status: "Forbidden",
         message: "Request not currently allowed",
@@ -37,11 +36,9 @@ router.get("/", async (req, res) => {
       volt: volt.value,
     };
     loggerChild.info(param);
-    res.header("Content-Type", "application/json; charset=utf-8");
-    res.send(param);
+    res.json(param);
   } catch (error) {
     loggerChild.error(error);
-    res.header("Content-Type", "application/json; charset=utf-8");
     res.status(500).json({
       status: "Internal Server Error",
     });
@@ -52,10 +49,9 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.put("/", async (req, res, next) => {
+router.put("/", async (req, res) => {
   try {
     if (!req.app.get("allowOpReqToTrain")) {
-      res.header("Content-Type", "application/json; charset=utf-8");
       res.status(403).json({
         status: "Forbidden",
         message: "Request not currently allowed",
@@ -64,7 +60,6 @@ router.put("/", async (req, res, next) => {
     }
     const pwm = Number(req.query.pwm);
     if (pwm === NaN || !(pwm >= 0 && pwm <= 100)) {
-      res.header("Content-Type", "application/json; charset=utf-8");
       res.status(400).json({
         status: "Bad Request",
         message: "pwm not specified or out of range",
@@ -75,30 +70,24 @@ router.put("/", async (req, res, next) => {
     const err = await setPWM(pwm);
 
     if (err == null) {
-      res.header("Content-Type", "application/json; charset=utf-8");
-      res.status(200).json({
+      res.json({
         status: "OK",
       });
     } else {
       loggerChild.error(err);
-      res.header("Content-Type", "application/json; charset=utf-8");
       res.status(500).json({
         status: "Internal Server Error",
       });
     }
-    return;
   } catch (error) {
     loggerChild.error(error);
-    res.header("Content-Type", "application/json; charset=utf-8");
     res.status(500).json({
       status: "Internal Server Error",
     });
-    return;
   } finally {
     loggerChild.info(
       req.method + " " + req.originalUrl + " code: " + res.statusCode
     );
-    return;
   }
 });
 
