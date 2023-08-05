@@ -93,6 +93,7 @@ router.put("/", async (req, res) => {
 
 const setPWM = (pwm) => {
   return new Promise((resolve, reject) => {
+    setTimeout(() => reject('timeout'), 1000);
     iottrain.characteristics["pwm"].instance.write(
       new Buffer.from([pwm]),
       false,
