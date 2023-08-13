@@ -50,7 +50,7 @@ router.put("/state/:trigger", (req, res) => {
   }
 });
 
-router.get("/image/:id", (req, res) => {
+router.get("/image/:id", async(req, res) => {
   try {
     const id = req.params.id;
 
@@ -66,7 +66,7 @@ router.get("/image/:id", (req, res) => {
     archive.directory(targetDirectory, false);
 
     archive.finalize();
-    output.on("close", () => {
+    await output.on("close", () => {
       res.header("Content-Type", "application/zip;");
       res.header("Content-Disposition", "attachment;");
       res.status(200).sendFile(zipPath);

@@ -66,7 +66,11 @@ router.put("/", async (req, res) => {
   }
 });
 
-router.use(accesslog);
+/**
+ * Set PWM value for iot train 
+ * @param {number} pwm 
+ * @returns 
+ */
 const setPWM = (pwm) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => reject('timeout'), 1000);
@@ -81,14 +85,14 @@ const setPWM = (pwm) => {
       }
     );
   })
-    .then(() => {
-      return;
-    })
-    .catch((error) => {
-      loggerChild.error(error);
-      iottrain.inbox["voltage"].value = null;
-      return error;
-    });
+  .then(() => {
+    return;
+  })
+  .catch((error) => {
+    loggerChild.error(error);
+    iottrain.inbox["voltage"].value = null;
+    return error;
+  });
 };
 
 module.exports = router;
