@@ -9,22 +9,27 @@ const loggerChild = logger.child({ domain: "matchmaker" });
 router.put("/state/:trigger", (req, res) => {
   try {
     const trigger = req.params.trigger;
-    if (trigger === "ready") {
-      req.app.set("state", STATE.READY);
-      req.app.set("allowOpReqToTrain", false);
-    } else if (trigger === "running") {
-      req.app.set("state", STATE.RUNNING);
-      setTimeout(() => {
-        if (req.app.get("state") === STATE.RUNNING) {
-          req.app.set("allowOpReqToTrain", true);
-        }
-      }, 10000);
-    } else if (trigger === "passing") {
-      req.app.set("state", STATE.PASSING);
-      req.app.set("allowOpReqToTrain", true);
-    } else if (trigger === "goal") {
-      req.app.set("state", STATE.GOAL);
-      req.app.set("allowOpReqToTrain", false);
+    switch (trigger) {
+      case  "ready":
+        req.app.set("state", STATE.READY);
+        req.app.set("allowOpReqToTrain", false);
+        break;
+      case "running":
+        req.app.set("state", STATE.RUNNING);
+        setTimeout(() => {
+          if (req.app.get("state") === STATE.RUNNING) {
+            req.app.set("allowOpReqToTrain", true);
+          }
+        }, 10000);
+        break;
+      case "passing":
+        req.app.set("state", STATE.PASSING);
+        req.app.set("allowOpReqToTrain", true);
+        break;
+      case "goal":
+        req.app.set("state", STATE.GOAL);
+        req.app.set("allowOpReqToTrain", false);
+        break;
     }
     res.json({
       status: "OK",
