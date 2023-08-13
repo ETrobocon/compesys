@@ -2,6 +2,7 @@ const archiver = require("archiver");
 const fs = require("fs");
 const express = require("express");
 const router = express.Router();
+const { RequestError, error, errorHandler }= require('../custom_error.js');
 const { logger, accesslog } = require("../logger.js");
 const loggerChild = logger.child({ domain: "matchmaker" });
 
