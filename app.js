@@ -8,6 +8,8 @@ const { logger } = require("./logger.js");
 const loggerChild = logger.child({ domain: "app" });
 const { STATE } = require("./constants");
 
+loggerChild.info("etrobo competition system");
+loggerChild.info(`Version:${process.env.npm_package_version}`);
 loggerChild.info("Initialization: start");
 
 const hello = require("./routes/hello");
