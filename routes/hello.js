@@ -3,19 +3,9 @@ const router = express.Router();
 const { logger, accesslog } = require("../logger.js");
 const loggerChild = logger.child({ domain: "hello" });
 
-router.get("/", (req, res) => {
-  try {
+router.get("/", (req, res, next) => {
     res.json({ message: "hello world" });
-  } catch (error) {
-    loggerChild.error(error);
-    res.status(500).json({
-      status: "Internal Server Error",
-    });
-  } finally {
-    loggerChild.info(
-      req.method + " " + req.originalUrl + " code: " + res.statusCode
-    );
-  }
+  next();
 });
 
 router.use(accesslog);
