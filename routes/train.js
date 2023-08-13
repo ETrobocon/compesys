@@ -66,6 +66,10 @@ router.put("/", async (req, res) => {
   }
 });
 
+router.all("*", (req, res, next) => {
+  next('router')
+});
+
 /**
  * Set PWM value for iot train 
  * @param {number} pwm 

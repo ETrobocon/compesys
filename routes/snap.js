@@ -66,6 +66,9 @@ router.post(
     } 
   }
 );
-router.use(accesslog);
+
+router.all("*", (req, res, next) => {
+  next('router')
+});
 
 module.exports = router;
