@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { RequestError, error, errorHandler }= require('../custom_error.js');
+const { RequestError, error }= require('../custom_error.js');
 const iottrain = require("../iottrain_central");
 const { logger, accesslog } = require("../logger.js");
 const loggerChild = logger.child({ domain: "train" });
+
+router.use(error);
 
 router.get("/", async (req, res) => {
   try {
@@ -11,11 +13,7 @@ router.get("/", async (req, res) => {
       req.app.get("state") === STATE.READY ||
       req.app.get("state") === STATE.GOAL
     ) {
-      res.status(403).json({
-        status: "Forbidden",
-        message: "Request not currently allowed",
-      });
-      return;
+      throw new RequestError(403, "Request not currently allowed");
     }
 
     const accel = iottrain.inbox.accelerometer;
@@ -38,56 +36,29 @@ router.get("/", async (req, res) => {
     loggerChild.info(param);
     res.json(param);
   } catch (error) {
-    loggerChild.error(error);
-    res.status(500).json({
-      status: "Internal Server Error",
-    });
-  } finally {
-    loggerChild.info(
-      req.method + " " + req.originalUrl + " code: " + res.statusCode
-    );
+    return res.status(error.statusCode).error(error);
   }
 });
 
 router.put("/", async (req, res) => {
   try {
-    if (!req.app.get("allowOpReqToTrain")) {
-      res.status(403).json({
-        status: "Forbidden",
-        message: "Request not currently allowed",
-      });
-      return;
+      throw new RequestError(403, "Request not currently allowed");
     }
     const pwm = Number(req.query.pwm);
     if (pwm === NaN || !(pwm >= 0 && pwm <= 100)) {
-      res.status(400).json({
-        status: "Bad Request",
-        message: "pwm not specified or out of range",
-      });
-      return;
+      throw new RequestError(403, "pwm not specified or out of range");
     }
 
     const err = await setPWM(pwm);
-
-    if (err == null) {
-      res.json({
-        status: "OK",
-      });
-    } else {
-      loggerChild.error(err);
-      res.status(500).json({
-        status: "Internal Server Error",
-      });
+    if (err !== null) {
+      throw err;
     }
-  } catch (error) {
-    loggerChild.error(error);
-    res.status(500).json({
-      status: "Internal Server Error",
+
+    res.json({
+      status: "OK",
     });
-  } finally {
-    loggerChild.info(
-      req.method + " " + req.originalUrl + " code: " + res.statusCode
-    );
+  } catch (error) {
+    return res.status(error.statusCode).error(error);
   }
 });
 

@@ -2,10 +2,11 @@ const archiver = require("archiver");
 const fs = require("fs");
 const express = require("express");
 const router = express.Router();
-const { RequestError, error, errorHandler }= require('../custom_error.js');
+const { RequestError, error }= require('../custom_error.js');
 const { logger, accesslog } = require("../logger.js");
 const loggerChild = logger.child({ domain: "matchmaker" });
 
+router.use(error);
 router.put("/state/:trigger", (req, res) => {
   try {
     const trigger = req.params.trigger;
@@ -35,14 +36,7 @@ router.put("/state/:trigger", (req, res) => {
       status: "OK",
     });
   } catch (error) {
-    loggerChild.error(error);
-    res.status(500).json({
-      status: "Internal Server Error",
-    });
-  } finally {
-    loggerChild.info(
-      req.method + " " + req.originalUrl + " code: " + res.statusCode
-    );
+    return res.status(error.statusCode).error(error);
   }
 });
 
@@ -68,14 +62,7 @@ router.get("/image/:id", (req, res) => {
       res.status(200).sendFile(zipPath);
     });
   } catch (error) {
-    loggerChild.error(error);
-    res.status(500).json({
-      status: "Internal Server Error",
-    });
-  } finally {
-    loggerChild.info(
-      req.method + " " + req.originalUrl + " code: " + res.statusCode
-    );
+    return res.status(error.statusCode).error(error);
   }
 });
 
