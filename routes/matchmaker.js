@@ -3,10 +3,19 @@ const fs = require("fs");
 const express = require("express");
 const router = express.Router();
 const { RequestError, error }= require('../custom_error.js');
+const { STATE, MATCHMAKER_IP } = require("../constants");
 const { logger, accesslog } = require("../logger.js");
 const loggerChild = logger.child({ domain: "matchmaker" });
 
 router.use(error);
+router.use((req, res, next) => {
+  if (req.ip !== MATCHMAKER_IP) {
+    const error = new RequestError(403, "Request not currently allowed");
+    return res.status(error.statusCode).error(error);
+  }
+  next();
+})
+
 router.put("/state/:trigger", (req, res) => {
   try {
     const trigger = req.params.trigger;

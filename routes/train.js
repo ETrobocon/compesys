@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { RequestError, error }= require('../custom_error.js');
+const { STATE, MATCHMAKER_IP } = require("../constants");
 const iottrain = require("../iottrain_central");
 const { logger, accesslog } = require("../logger.js");
 const loggerChild = logger.child({ domain: "train" });
@@ -42,6 +43,7 @@ router.get("/", async (req, res) => {
 
 router.put("/", async (req, res) => {
   try {
+    if (!req.app.get("allowOpReqToTrain") && req.ip !== MATCHMAKER_IP) {
       throw new RequestError(403, "Request not currently allowed");
     }
     const pwm = Number(req.query.pwm);
