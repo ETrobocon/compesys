@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { logger } = require("../logger.js");
+const { logger, accesslog } = require("../logger.js");
 const loggerChild = logger.child({ domain: "hello" });
 
 router.get("/", (req, res) => {
@@ -17,5 +17,7 @@ router.get("/", (req, res) => {
     );
   }
 });
+
+router.use(accesslog);
 
 module.exports = router;

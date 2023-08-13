@@ -2,8 +2,7 @@ const archiver = require("archiver");
 const fs = require("fs");
 const express = require("express");
 const router = express.Router();
-const { STATE } = require("../constants");
-const { logger } = require("../logger.js");
+const { logger, accesslog } = require("../logger.js");
 const loggerChild = logger.child({ domain: "matchmaker" });
 
 router.put("/state/:trigger", (req, res) => {
@@ -73,5 +72,6 @@ router.get("/image/:id", (req, res) => {
     );
   }
 });
+router.use(accesslog);
 
 module.exports = router;

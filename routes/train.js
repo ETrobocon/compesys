@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { STATE } = require("../constants");
 const iottrain = require("../iottrain_central");
-const { logger } = require("../logger.js");
+const { logger, accesslog } = require("../logger.js");
 const loggerChild = logger.child({ domain: "train" });
 
 router.get("/", async (req, res) => {
@@ -91,6 +91,7 @@ router.put("/", async (req, res) => {
   }
 });
 
+router.use(accesslog);
 const setPWM = (pwm) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => reject('timeout'), 1000);

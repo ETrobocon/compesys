@@ -3,7 +3,7 @@ const fs = require("fs");
 const express = require("express");
 const router = express.Router();
 const { STATE } = require("../constants");
-const { logger } = require("../logger.js");
+const { logger, accesslog } = require("../logger.js");
 const loggerChild = logger.child({ domain: "snap" });
 
 router.post(
@@ -81,5 +81,6 @@ router.post(
     }
   }
 );
+router.use(accesslog);
 
 module.exports = router;

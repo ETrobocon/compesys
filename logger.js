@@ -1,6 +1,5 @@
 const pino = require("pino");
-
-module.exports.logger = pino({
+const logger = pino({
   level: "info",
   transport: {
     targets: [
@@ -18,3 +17,14 @@ module.exports.logger = pino({
     ],
   },
 });
+
+const accesslog = (req, res, next) => {
+  logger.info(
+    req.method + " " + req.originalUrl + " code: " + res.statusCode + " "
+  );
+};
+
+module.exports = {
+  logger: logger,
+  accesslog: accesslog,
+};
