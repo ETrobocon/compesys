@@ -6,6 +6,9 @@ const STATE = {
   GOAL: 4, // ゴール
 };
 
+const MATCHMAKER_IP = '192.168.11.11'
+
 module.exports = {
   STATE: STATE,
+  MATCHMAKER_IP: MATCHMAKER_IP,
 };
