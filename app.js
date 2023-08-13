@@ -41,6 +41,6 @@ if (fs.existsSync(process.env.TEMP_DIR)) {
 
 loggerChild.info("Initialization: completion");
 
-const server = app.listen(process.env.LISTEN_PORT, () => {
+const server = app.listen(process.env.LISTEN_PORT, '0.0.0.0', () => {
   loggerChild.info("server listening on PORT:" + server.address().port);
 });
