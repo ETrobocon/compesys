@@ -1,3 +1,5 @@
+const { logger, accesslog } = require("./logger.js");
+
 class RequestError extends Error {
   constructor(statusCode, message) {
     super(message);
@@ -22,16 +24,17 @@ class RequestError extends Error {
 const error = (req, res, next) => {
   res.error = (err) => {
     if (err.statusCode) {
-      return res.status(err.statusCode).json({ 
+      res.status(err.statusCode).json({ 
         status: err.status,
         message: err.message 
       });
-    }
-    if (!res.statusCode) {
-      return res.status(500).json({ 
+    } else if (!res.statusCode) {
+      res.status(500).json({ 
         status: "Internal Server Error"
       });
     }
+    accesslog(req, res);
+    return ;
   };
   next();
 };
@@ -43,7 +46,6 @@ const errorHandler = (err, req, res, next) => {
     logger.error(err);
   }
   res.status(err.statusCode || 500).error(err);
-  next();
 };
 
 module.exports = {
