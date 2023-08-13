@@ -4,7 +4,7 @@ const { logger, accesslog } = require("../logger.js");
 const loggerChild = logger.child({ domain: "hello" });
 
 router.get("/", (req, res, next) => {
-    res.json({ message: "hello world" });
+  res.json({ message: "hello world" });
   next();
 });
 
