@@ -17,10 +17,18 @@ const snap = require("./routes/snap");
 const train = require("./routes/train");
 const matchmaker = require("./routes/matchmaker");
 
-app.use("/", hello);
+app.use("/$", hello);
 app.use("/snap", snap);
 app.use("/train", train);
 app.use("/matchmaker", matchmaker);
+app.use((req, res, next) => {
+  res.status(404).json({
+    status: "Not Found",
+  });
+  loggerChild.info(
+    req.method + " " + req.originalUrl + " code: " + res.statusCode
+  );
+});
 app.set("state", STATE.UNDEFINDED);
 app.set("allowOpReqToTrain", true);
 
