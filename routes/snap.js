@@ -4,7 +4,7 @@ const express = require("express");
 const router = express.Router();
 const { RequestError, error }= require('../custom_error.js');
 const { STATE } = require("../constants");
-const { logger, accesslog } = require("../logger.js");
+const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "snap" });
 
 router.use(error);
@@ -60,7 +60,6 @@ router.post(
         });
       });
       res.status(201).json({ status: "Created" });
-      accesslog(req, res);
     } catch (error) {
       return res.status(error.statusCode).error(error);
     } 

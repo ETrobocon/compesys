@@ -3,7 +3,7 @@ const router = express.Router();
 const { RequestError, error }= require('../custom_error.js');
 const { STATE, MATCHMAKER_IP } = require("../constants");
 const iottrain = require("../iottrain_central");
-const { logger, accesslog } = require("../logger.js");
+const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "train" });
 
 router.use(error);
@@ -34,9 +34,7 @@ router.get("/", async (req, res) => {
       },
       volt: volt.value,
     };
-    loggerChild.info(param);
     res.json(param);
-    accesslog(req, res);
   } catch (error) {
     return res.status(error.statusCode).error(error);
   }
@@ -60,7 +58,6 @@ router.put("/", async (req, res) => {
     res.json({
       status: "OK",
     });
-    accesslog(req, res);
   } catch (error) {
     return res.status(error.statusCode).error(error);
   }

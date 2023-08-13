@@ -4,7 +4,7 @@ const express = require("express");
 const router = express.Router();
 const { RequestError, error }= require('../custom_error.js');
 const { STATE, MATCHMAKER_IP } = require("../constants");
-const { logger, accesslog } = require("../logger.js");
+const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "matchmaker" });
 
 router.use(error);
@@ -44,7 +44,6 @@ router.put("/state/:trigger", (req, res) => {
     res.json({
       status: "OK",
     });
-    accesslog(req, res);
   } catch (error) {
     return res.status(error.statusCode).error(error);
   }
@@ -70,7 +69,6 @@ router.get("/image/:id", async(req, res) => {
       res.header("Content-Type", "application/zip;");
       res.header("Content-Disposition", "attachment;");
       res.status(200).sendFile(zipPath);
-      accesslog(req, res);
     });
   } catch (error) {
     return res.status(error.statusCode).error(error);

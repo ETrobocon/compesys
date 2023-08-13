@@ -4,7 +4,7 @@ const { execSync } = require("child_process");
 const express = require("express");
 
 const app = express();
-const { logger } = require("./logger.js");
+const { logger, accesslogHandler } = require("./logger.js");
 const loggerChild = logger.child({ domain: "app" });
 const { STATE } = require("./constants");
 
@@ -17,6 +17,7 @@ const snap = require("./routes/snap");
 const train = require("./routes/train");
 const matchmaker = require("./routes/matchmaker");
 
+app.use(accesslogHandler);
 app.use("/$", hello);
 app.use("/snap", snap);
 app.use("/train", train);
@@ -25,7 +26,6 @@ app.use((req, res, next) => {
   res.status(404).json({
     status: "Not Found",
   });
-  accesslog(req, res);
 });
 app.set("state", STATE.UNDEFINDED);
 app.set("allowOpReqToTrain", true);
