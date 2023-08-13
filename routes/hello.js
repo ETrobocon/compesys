@@ -5,7 +5,7 @@ const loggerChild = logger.child({ domain: "hello" });
 
 router.get("/", (req, res, next) => {
   res.json({ message: "hello world" });
-  next();
+  accesslog(req, res);
 });
 
 router.use(accesslog);
