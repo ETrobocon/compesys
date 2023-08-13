@@ -8,6 +8,8 @@ router.get("/", (req, res, next) => {
   accesslog(req, res);
 });
 
-router.use(accesslog);
+router.all("*", (req, res, next) => {
+  next('router')
+});
 
 module.exports = router;
