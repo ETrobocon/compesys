@@ -25,9 +25,7 @@ app.use((req, res, next) => {
   res.status(404).json({
     status: "Not Found",
   });
-  loggerChild.info(
-    req.method + " " + req.originalUrl + " code: " + res.statusCode
-  );
+  accesslog(req, res);
 });
 app.set("state", STATE.UNDEFINDED);
 app.set("allowOpReqToTrain", true);

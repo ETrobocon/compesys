@@ -18,7 +18,7 @@ const logger = pino({
   },
 });
 
-const accesslog = (req, res, next) => {
+const accesslog = (req, res) => {
   logger.info(
     req.method + " " + req.originalUrl + " code: " + res.statusCode + " "
   );

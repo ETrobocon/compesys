@@ -131,33 +131,6 @@ noble.on("discover", async (peripheral) => {
       loggerChild.info("[noble]connected.");
       await this.discoverServicesAsync();
       await waitForDiscover();
-      for (const key in noble.characteristics) {
-        const characteristic = noble.characteristics[key];
-        const instance = characteristic.instance;
-        if (characteristic.isNotifiable) {
-          loggerChild.info("[noble]subscribe: " + key);
-          instance.subscribeAsync();
-          //instance.on('data', async (data, isNotification) => {
-          //console.log(data);
-          //console.log(isNotification);
-          // let dv = new DataView(data.buffer);
-          // noble.inbox[key].timestamp = dv.getUint32(0, true);
-          // switch (key) {
-          //   case 'accelerometer':
-          //   case 'gyroscope':
-          //     noble.inbox[key].x = dv.getFloat32(4, true);
-          //     noble.inbox[key].y = dv.getFloat32(8, true);
-          //     noble.inbox[key].z = dv.getFloat32(12, true);
-          //     break;
-
-          //   case 'temperature':
-          //   case 'voltage':
-          //     noble.inbox[key].value = dv.getFloat32(4, true);
-          //     break;
-          // }
-          //});
-        }
-      }
       loop();
     });
 
@@ -237,6 +210,10 @@ const loop = async () => {
   }
 };
 
+/**
+ * Get accelerometer for iot train
+ * @returns 
+ */
 const getAccelerometer = () => {
   return new Promise((resolve, reject) => {
     noble.characteristics["accelerometer"].instance.read((error, data) => {
@@ -263,6 +240,10 @@ const getAccelerometer = () => {
     });
 };
 
+/**
+ * Get gyro for iot train
+ * @returns 
+ */
 const getGyroscope = () => {
   return new Promise((resolve, reject) => {
     noble.characteristics["gyroscope"].instance.read((error, data) => {
@@ -289,6 +270,10 @@ const getGyroscope = () => {
     });
 };
 
+/**
+ * Get voltage for iot train
+ * @returns 
+ */
 const getVoltage = () => {
   return new Promise((resolve, reject) => {
     noble.characteristics["voltage"].instance.read((error, data) => {
