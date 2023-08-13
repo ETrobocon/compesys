@@ -44,6 +44,7 @@ router.put("/state/:trigger", (req, res) => {
     res.json({
       status: "OK",
     });
+    accesslog(req, res);
   } catch (error) {
     return res.status(error.statusCode).error(error);
   }
@@ -69,6 +70,7 @@ router.get("/image/:id", (req, res) => {
       res.header("Content-Type", "application/zip;");
       res.header("Content-Disposition", "attachment;");
       res.status(200).sendFile(zipPath);
+      accesslog(req, res);
     });
   } catch (error) {
     return res.status(error.statusCode).error(error);

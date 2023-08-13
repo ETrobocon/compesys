@@ -60,6 +60,7 @@ router.post(
         });
       });
       res.status(201).json({ status: "Created" });
+      accesslog(req, res);
     } catch (error) {
       return res.status(error.statusCode).error(error);
     } 

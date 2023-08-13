@@ -36,6 +36,7 @@ router.get("/", async (req, res) => {
     };
     loggerChild.info(param);
     res.json(param);
+    accesslog(req, res);
   } catch (error) {
     return res.status(error.statusCode).error(error);
   }
@@ -59,6 +60,7 @@ router.put("/", async (req, res) => {
     res.json({
       status: "OK",
     });
+    accesslog(req, res);
   } catch (error) {
     return res.status(error.statusCode).error(error);
   }
