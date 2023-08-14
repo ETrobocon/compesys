@@ -87,7 +87,7 @@ const setPWM = (pwm) => {
     );
   })
   .then(() => {
-    return;
+    return null;
   })
   .catch((error) => {
     loggerChild.error(error);
