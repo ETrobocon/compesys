@@ -8,7 +8,7 @@ const loggerChild = logger.child({ domain: "train" });
 
 router.use(error);
 
-router.get("/", async (req, res) => {
+router.get("/", (req, res) => {
   try {
     if (
       req.app.get("state") === STATE.READY ||

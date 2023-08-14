@@ -1,4 +1,4 @@
-const { logger, accesslog } = require("./logger.js");
+const { logger } = require("./logger.js");
 
 class RequestError extends Error {
   constructor(statusCode, message) {
@@ -33,7 +33,6 @@ const error = (req, res, next) => {
         status: "Internal Server Error"
       });
     }
-    accesslog(req, res);
     return ;
   };
   next();

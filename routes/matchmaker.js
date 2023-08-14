@@ -14,7 +14,7 @@ router.use((req, res, next) => {
     return res.status(error.statusCode).error(error);
   }
   next();
-})
+});
 
 router.put("/state/:trigger", (req, res) => {
   try {
