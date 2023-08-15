@@ -16,12 +16,14 @@ const hello = require("./routes/hello");
 const snap = require("./routes/snap");
 const train = require("./routes/train");
 const matchmaker = require("./routes/matchmaker");
+const version = require("./routes/version.js");
 
 app.use(accesslogHandler);
 app.use("/$", hello);
 app.use("/snap", snap);
 app.use("/train", train);
 app.use("/matchmaker", matchmaker);
+app.use("/version", version);
 app.use((req, res, next) => {
   res.status(404).json({
     status: "Not Found",

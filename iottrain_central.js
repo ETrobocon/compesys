@@ -59,6 +59,20 @@ const GATT_PROFILE = {
           isNotifiable: true,
           packetLength: 8,
         },
+        version: {
+          uuid: "AD0C2003-64E9-48B0-9088-6F9E9FE4972E",
+          isReadable: true,
+          isWritable: false,
+          isNotifiable: true,
+          packetLength: 4,
+        },
+        mabeeeName: {
+          uuid: "AD0C2004-64E9-48B0-9088-6F9E9FE4972E",
+          isReadable: true,
+          isWritable: false,
+          isNotifiable: true,
+          packetLength: 12,
+        },
       },
     },
   },
@@ -90,6 +104,10 @@ noble.inbox = {
   pwm: {
     timestamp: 0,
     value: 0,
+  },
+  version: null,
+  mabeee: {
+    name: null,
   },
 };
 noble.connected = false;
@@ -131,6 +149,7 @@ noble.on("discover", async (peripheral) => {
       loggerChild.info("[noble]connected.");
       await this.discoverServicesAsync();
       await waitForDiscover();
+      getVersion();
       loop();
     });
 
@@ -304,6 +323,31 @@ const getVoltage = () => {
       noble.inbox["voltage"].value = null;
       return;
     });
+};
+
+/**
+ * Get firmware version for iot_train 
+ * @returns 
+ */
+const getVersion = () => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => reject('timeout'), 10000);
+    noble.characteristics["version"].instance.read((error, data) => {
+      if (error !== null) {
+        return reject(error);
+      }
+      return resolve(data);
+    });
+  })
+  .then((data) => {
+    noble.inbox["version"] = data.readUInt16LE(0) + "." +data.readUInt16LE(2);
+    return;
+  })
+  .catch((error) => {
+    loggerChild.error(error);
+    noble.inbox["version"] = null;
+    return;
+  });
 };
 
 module.exports = noble;
