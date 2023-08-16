@@ -1,7 +1,7 @@
 const pino = require("pino");
-
-module.exports.logger = pino({
+const logger = pino({
   level: "info",
+  timestamp: pino.stdTimeFunctions.isoTime,
   transport: {
     targets: [
       {
@@ -18,3 +18,37 @@ module.exports.logger = pino({
     ],
   },
 });
+
+function accesslogHandler(req, res, next) {
+  var oldWrite = res.write;
+  var oldEnd = res.end;
+
+  var chunks = [];
+  res.write = function (chunk) {
+    chunks.push(chunk);
+    oldWrite.apply(res, arguments);
+  };
+
+  res.end = function (chunk) {
+    if (chunk) {
+      chunks.push(chunk);
+    }
+    var body = Buffer.concat(chunks).toString('utf8');
+    const logs = req.method + " " + req.originalUrl + " " + res.statusCode + " " + body
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      logger.info(logs);
+    } else if (res.statusCode >= 400 && res.statusCode < 500) {
+      logger.warn(logs);
+    } else {
+      logger.error(logs);
+    }
+    oldEnd.apply(res, arguments);
+  };
+
+  next();
+}
+
+module.exports = {
+  logger: logger,
+  accesslogHandler: accesslogHandler,
+};

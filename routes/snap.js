@@ -2,9 +2,12 @@ const bodyParser = require("body-parser");
 const fs = require("fs");
 const express = require("express");
 const router = express.Router();
+const { RequestError, error }= require('../custom_error.js');
 const { STATE } = require("../constants");
 const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "snap" });
+
+router.use(error);
 
 router.post(
   "/",
@@ -15,26 +18,14 @@ router.post(
         req.app.get("state") === STATE.READY ||
         req.app.get("state") === STATE.GOAL
       ) {
-        res.status(403).json({
-          status: "Forbidden",
-          message: "Request not currently allowed",
-        });
-        return;
+        throw new RequestError(403, "Request not currently allowed");
       }
       const id = req.query.id;
       if (id === "") {
-        res.status(400).json({
-          status: "Bad Request",
-          message: "ID not specified or not numeric",
-        });
-        return;
+        throw new RequestError(400, "Bad Request");
       }
       if (req.get("Content-Type") !== "image/png") {
-        res.status(400).json({
-          status: "Bad Request",
-          message: "Unexpected content type",
-        });
-        return;
+        throw new RequestError(400, "Unexpected content type");
       }
       const now = new Date();
       const date =
@@ -68,23 +59,15 @@ router.post(
           }
         });
       });
-      res.header("Content-Type", "application/json; charset=utf-8");
       res.status(201).json({ status: "Created" });
-      return;
     } catch (error) {
-      loggerChild.error(error);
-      res.header("Content-Type", "application/json; charset=utf-8");
-      res.status(500).json({
-        status: "Internal Server Error",
-      });
-      return;
-    } finally {
-      loggerChild.info(
-        req.method + " " + req.originalUrl + " code: " + res.statusCode
-      );
-      return;
-    }
+      return res.status(error.statusCode).error(error);
+    } 
   }
 );
+
+router.all("*", (req, res, next) => {
+  next('router')
+});
 
 module.exports = router;

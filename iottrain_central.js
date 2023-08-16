@@ -59,6 +59,20 @@ const GATT_PROFILE = {
           isNotifiable: true,
           packetLength: 8,
         },
+        version: {
+          uuid: "AD0C2003-64E9-48B0-9088-6F9E9FE4972E",
+          isReadable: true,
+          isWritable: false,
+          isNotifiable: true,
+          packetLength: 4,
+        },
+        mabeeeName: {
+          uuid: "AD0C2004-64E9-48B0-9088-6F9E9FE4972E",
+          isReadable: true,
+          isWritable: false,
+          isNotifiable: true,
+          packetLength: 12,
+        },
       },
     },
   },
@@ -68,31 +82,40 @@ noble.characteristics = GATT_PROFILE.services.xiao.characteristics;
 noble.servicesDiscovered = false;
 noble.inbox = {
   accelerometer: {
-    timestamp: 0,
-    x: 0,
-    y: 0,
-    z: 0,
+    timestamp: null,
+    x: null,
+    y: null,
+    z: null,
   },
   gyroscope: {
-    timestamp: 0,
-    x: 0,
-    y: 0,
-    z: 0,
+    timestamp: null,
+    x: null,
+    y: null,
+    z: null,
   },
   temperature: {
     timestamp: 0,
     value: 0,
   },
   voltage: {
-    timestamp: 0,
-    value: 0,
+    timestamp: null,
+    value: null,
   },
   pwm: {
     timestamp: 0,
     value: 0,
   },
+  version: null,
+  mabeee: {
+    name: null,
+  },
 };
 noble.connected = false;
+noble.timer = {
+  accelerometer: 50,
+  gyroscope: 50,
+  voltage: 5000,
+};
 
 noble.on("stateChange", async (state) => {
   loggerChild.info("[noble]onStateChange: " + state);
@@ -126,33 +149,7 @@ noble.on("discover", async (peripheral) => {
       loggerChild.info("[noble]connected.");
       await this.discoverServicesAsync();
       await waitForDiscover();
-      for (const key in noble.characteristics) {
-        const characteristic = noble.characteristics[key];
-        const instance = characteristic.instance;
-        if (characteristic.isNotifiable) {
-          loggerChild.info("[noble]subscribe: " + key);
-          instance.subscribeAsync();
-          //instance.on('data', async (data, isNotification) => {
-          //console.log(data);
-          //console.log(isNotification);
-          // let dv = new DataView(data.buffer);
-          // noble.inbox[key].timestamp = dv.getUint32(0, true);
-          // switch (key) {
-          //   case 'accelerometer':
-          //   case 'gyroscope':
-          //     noble.inbox[key].x = dv.getFloat32(4, true);
-          //     noble.inbox[key].y = dv.getFloat32(8, true);
-          //     noble.inbox[key].z = dv.getFloat32(12, true);
-          //     break;
-
-          //   case 'temperature':
-          //   case 'voltage':
-          //     noble.inbox[key].value = dv.getFloat32(4, true);
-          //     break;
-          // }
-          //});
-        }
-      }
+      getVersion();
       loop();
     });
 
@@ -206,15 +203,36 @@ const waitForDiscover = async () => {
 }
 
 const loop = async () => {
+  let accTimer = 0;
+  let gyroTimer = 0;
+  let voltageTimer = 0;
   while (true) {
     if (!noble.connected) {
       break;
     }
-    await Promise.all([getAccelerometer(), getGyroscope(), getVoltage()]);
-    await sleep(100);
+    if (accTimer > noble.timer.accelerometer) {
+      await getAccelerometer();
+      accTimer = 0;
+    }
+    if (gyroTimer > noble.timer.gyroscope) {
+      await getGyroscope();
+      gyroTimer = 0;
+    }
+    if (voltageTimer > noble.timer.voltage) {
+      await getVoltage();
+      voltageTimer = 0;
+    }
+    await sleep(10);
+    accTimer += 10;
+    gyroTimer += 10;
+    voltageTimer += 10;
   }
 };
 
+/**
+ * Get accelerometer for iot train
+ * @returns 
+ */
 const getAccelerometer = () => {
   return new Promise((resolve, reject) => {
     noble.characteristics["accelerometer"].instance.read((error, data) => {
@@ -225,6 +243,7 @@ const getAccelerometer = () => {
     });
   })
     .then((data) => {
+      noble.inbox["accelerometer"].timestamp = data.readFloatLE(0);
       noble.inbox["accelerometer"].x = data.readFloatLE(4);
       noble.inbox["accelerometer"].y = data.readFloatLE(8);
       noble.inbox["accelerometer"].z = data.readFloatLE(12);
@@ -232,6 +251,7 @@ const getAccelerometer = () => {
     })
     .catch((error) => {
       loggerChild.error(error);
+      noble.inbox["accelerometer"].timestamp = null;
       noble.inbox["accelerometer"].x = null;
       noble.inbox["accelerometer"].y = null;
       noble.inbox["accelerometer"].z = null;
@@ -239,6 +259,10 @@ const getAccelerometer = () => {
     });
 };
 
+/**
+ * Get gyro for iot train
+ * @returns 
+ */
 const getGyroscope = () => {
   return new Promise((resolve, reject) => {
     noble.characteristics["gyroscope"].instance.read((error, data) => {
@@ -249,6 +273,7 @@ const getGyroscope = () => {
     });
   })
     .then((data) => {
+      noble.inbox["gyroscope"].timestamp = data.readFloatLE(0);
       noble.inbox["gyroscope"].x = data.readFloatLE(4);
       noble.inbox["gyroscope"].y = data.readFloatLE(8);
       noble.inbox["gyroscope"].z = data.readFloatLE(12);
@@ -256,6 +281,7 @@ const getGyroscope = () => {
     })
     .catch((error) => {
       loggerChild.error(error);
+      noble.inbox["gyroscope"].timestamp = null;
       noble.inbox["gyroscope"].x = null;
       noble.inbox["gyroscope"].y = null;
       noble.inbox["gyroscope"].z = null;
@@ -263,6 +289,10 @@ const getGyroscope = () => {
     });
 };
 
+/**
+ * Get voltage for iot train
+ * @returns 
+ */
 const getVoltage = () => {
   return new Promise((resolve, reject) => {
     noble.characteristics["voltage"].instance.read((error, data) => {
@@ -273,22 +303,51 @@ const getVoltage = () => {
     });
   })
     .then((data) => {
-      noble.inbox["voltage"].value = data.readFloatLE(4);
-      if (
-        noble.inbox["voltage"].value <= 1.2 &&
-        noble.inbox["voltage"].value > 0
-      ) {
-        loggerChild.warn(
-          "battery voltage is low!! :" + noble.inbox["voltage"].value + "V"
-        );
+      if (data.readFloatLE(4) !== 0) {
+        noble.inbox["voltage"].timestamp = data.readFloatLE(0);
+        noble.inbox["voltage"].value = data.readFloatLE(4);
+        if (
+          noble.inbox["voltage"].value <= 1.2 &&
+          noble.inbox["voltage"].value > 0
+        ) {
+          loggerChild.warn(
+            "battery voltage is low!! :" + noble.inbox["voltage"].value + "V"
+          );
+        }
       }
       return;
     })
     .catch((error) => {
       loggerChild.error(error);
+      noble.inbox["voltage"].timestamp = null;
       noble.inbox["voltage"].value = null;
       return;
     });
+};
+
+/**
+ * Get firmware version for iot_train 
+ * @returns 
+ */
+const getVersion = () => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => reject('timeout'), 10000);
+    noble.characteristics["version"].instance.read((error, data) => {
+      if (error !== null) {
+        return reject(error);
+      }
+      return resolve(data);
+    });
+  })
+  .then((data) => {
+    noble.inbox["version"] = data.readUInt16LE(0) + "." +data.readUInt16LE(2);
+    return;
+  })
+  .catch((error) => {
+    loggerChild.error(error);
+    noble.inbox["version"] = null;
+    return;
+  });
 };
 
 module.exports = noble;

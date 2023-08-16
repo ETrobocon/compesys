@@ -3,24 +3,15 @@ const router = express.Router();
 const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "hello" });
 
-router.get("/", (req, res, next) => {
-  try {
-    res.header("Content-Type", "application/json; charset=utf-8");
-    res.send({ message: "hello world" });
-    return;
-  } catch (error) {
-    loggerChild.error(error);
-    res.header("Content-Type", "application/json; charset=utf-8");
-    res.status(500).json({
-      status: "Internal Server Error",
-    });
-    return;
-  } finally {
-    loggerChild.info(
-      req.method + " " + req.originalUrl + " code: " + res.statusCode
-    );
-    return;
-  }
+router.get("/", (req, res) => {
+  res.json({ 
+    status: "OK", 
+    message: "hello world" 
+  });
+});
+
+router.all("*", (req, res, next) => {
+  next('router')
 });
 
 module.exports = router;
