@@ -37,6 +37,7 @@ router.post(
         ("0" + now.getSeconds()).slice(-2);
       const directoryPath = `${process.env.TEMP_DIR}/${id}`;
       const path = `${process.env.TEMP_DIR}/${id}/${id}_${date}.png`;
+
       if (!fs.existsSync(directoryPath)) {
         fs.mkdir(directoryPath, (err) => {
           if (err) {
@@ -49,6 +50,13 @@ router.post(
           });
         });
       }
+
+      const files = fs.readdirSync(directoryPath);
+      const fileCount = files.length;
+      if (fileCount >= 3) {
+        throw new RequestError(429, "Too Many Requests");
+      }
+
       fs.writeFile(path, req.body, "binary", (err) => {
         if (err) {
           throw err;
