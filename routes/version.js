@@ -1,13 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { RequestError, error }= require('../custom_error.js');
+const { error }= require('../custom_error.js');
 const iottrain = require("../iottrain_central");
 const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "version" });
 
 router.use(error);
 
-router.get("/", async(req, res, next) => {
+router.get("/", async(_, res, _) => {
   try {
     const err = await getMaBeeeName();
     if (err !== null) {
@@ -23,7 +23,7 @@ router.get("/", async(req, res, next) => {
   } 
 });
 
-router.all("*", (req, res, next) => {
+router.all("*", (_, _, next) => {
   next('router')
 });
 

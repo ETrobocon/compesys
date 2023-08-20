@@ -78,7 +78,7 @@ router.get("/image/:id", async(req, res) => {
   }
 });
 
-router.all("*", (req, res, next) => {
+router.all("*", (_, _, next) => {
   next('router')
 });
 

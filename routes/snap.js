@@ -74,7 +74,7 @@ router.post(
   }
 );
 
-router.all("*", (req, res, next) => {
+router.all("*", (_, _, next) => {
   next('router')
 });
 
