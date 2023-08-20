@@ -23,6 +23,9 @@ router.put("/state/:trigger", (req, res) => {
       case  "ready":
         req.app.set("state", STATE.READY);
         req.app.set("allowOpReqToTrain", false);
+        if (fs.existsSync(process.env.TEMP_DIR)) {
+          execSync(`rm -rf ${process.env.TEMP_DIR}/*`);
+        }
         break;
       case "running":
         req.app.set("state", STATE.RUNNING);
@@ -70,12 +73,6 @@ router.get("/image/:id", async(req, res) => {
       res.header("Content-Disposition", "attachment;");
       res.status(200).sendFile(zipPath);
     });
-    if (fs.existsSync(targetDirectory)) {
-      execSync(`rm -rf ${targetDirectory}`);
-    }
-    if (fs.existsSync(zipPath)) {
-      execSync(`rm -rf ${zipPath}`);
-    } 
   } catch (error) {
     return res.status(error.statusCode).error(error);
   }
