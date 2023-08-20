@@ -54,7 +54,7 @@ router.post(
       const files = fs.readdirSync(directoryPath);
       const fileCount = files.length;
       if (fileCount >= 3) {
-        throw new RequestError(429, "Too Many Requests");
+        throw new RequestError(429, "Up to 2 images can be accepted");
       }
 
       fs.writeFile(path, req.body, "binary", (err) => {
