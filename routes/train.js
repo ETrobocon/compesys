@@ -63,7 +63,7 @@ router.put("/", async (req, res) => {
   }
 });
 
-router.all("*", (_, _, next) => {
+router.all("*", (req, res, next) => {
   next('router')
 });
 

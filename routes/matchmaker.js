@@ -8,13 +8,13 @@ const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "matchmaker" });
 
 router.use(error);
-router.use((req, res, next) => {
-  if (req.ip !== MATCHMAKER_IP) {
-    const error = new RequestError(403, "Request not currently allowed");
-    return res.status(error.statusCode).error(error);
-  }
-  next();
-});
+// router.use((req, res, next) => {
+//   if (req.ip !== MATCHMAKER_IP) {
+//     const error = new RequestError(403, "Request not currently allowed");
+//     return res.status(error.statusCode).error(error);
+//   }
+//   next();
+// });
 
 router.put("/state/:trigger", (req, res) => {
   try {
@@ -78,7 +78,7 @@ router.get("/image/:id", async(req, res) => {
   }
 });
 
-router.all("*", (_, _, next) => {
+router.all("*", (req, res, next) => {
   next('router')
 });
 

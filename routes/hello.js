@@ -3,14 +3,14 @@ const router = express.Router();
 const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "hello" });
 
-router.get("/", (_, res) => {
+router.get("/", (req, res) => {
   res.json({ 
     status: "OK", 
     message: "hello world" 
   });
 });
 
-router.all("*", (_, _, next) => {
+router.all("*", (req, res, next) => {
   next('router')
 });
 

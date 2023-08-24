@@ -7,7 +7,7 @@ const loggerChild = logger.child({ domain: "version" });
 
 router.use(error);
 
-router.get("/", async(_, res, _) => {
+router.get("/", async(req, res) => {
   try {
     const err = await getMaBeeeName();
     if (err !== null) {
@@ -23,7 +23,7 @@ router.get("/", async(_, res, _) => {
   } 
 });
 
-router.all("*", (_, _, next) => {
+router.all("*", (req, res, next) => {
   next('router')
 });
 
