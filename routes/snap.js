@@ -22,7 +22,7 @@ router.post(
       }
       const id = req.query.id;
       if (id === undefined || !(id >= 1 && id <= 300)) {
-        throw new RequestError(400, "Bad Request");
+        throw new RequestError(400, "Invalid id format or range");
       }
       if (req.get("Content-Type") !== "image/png") {
         throw new RequestError(400, "Unexpected content type");
