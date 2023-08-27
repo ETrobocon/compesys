@@ -115,6 +115,8 @@ noble.timer = {
   accelerometer: 50,
   gyroscope: 50,
   voltage: 5000,
+  version: 10000,
+  mabeee: 10000,
 };
 
 noble.on("stateChange", async (state) => {
@@ -149,7 +151,8 @@ noble.on("discover", async (peripheral) => {
       loggerChild.info("[noble]connected.");
       await this.discoverServicesAsync();
       await waitForDiscover();
-      getVersion();
+      await getVersion();
+      await getMaBeeeName();
       loop();
     });
 
@@ -206,6 +209,8 @@ const loop = async () => {
   let accTimer = 0;
   let gyroTimer = 0;
   let voltageTimer = 0;
+  let versionTimer = 0;
+  let mabeeeTimer = 0;
   while (true) {
     if (!noble.connected) {
       break;
@@ -222,10 +227,20 @@ const loop = async () => {
       await getVoltage();
       voltageTimer = 0;
     }
+    if (versionTimer > noble.timer.version) {
+      await getVersion();
+      versionTimer = 0;
+    }
+    if (mabeeeTimer > noble.timer.mabeee) {
+      await getMaBeeeName();
+    }
+
     await sleep(10);
     accTimer += 10;
     gyroTimer += 10;
     voltageTimer += 10;
+    versionTimer += 10;
+    mabeeeTimer += 10;
   }
 };
 
@@ -242,21 +257,21 @@ const getAccelerometer = () => {
       return resolve(data);
     });
   })
-    .then((data) => {
-      noble.inbox["accelerometer"].timestamp = data.readFloatLE(0);
-      noble.inbox["accelerometer"].x = data.readFloatLE(4);
-      noble.inbox["accelerometer"].y = data.readFloatLE(8);
-      noble.inbox["accelerometer"].z = data.readFloatLE(12);
-      return;
-    })
-    .catch((error) => {
-      loggerChild.error(error);
-      noble.inbox["accelerometer"].timestamp = null;
-      noble.inbox["accelerometer"].x = null;
-      noble.inbox["accelerometer"].y = null;
-      noble.inbox["accelerometer"].z = null;
-      return;
-    });
+  .then((data) => {
+    noble.inbox["accelerometer"].timestamp = data.readFloatLE(0);
+    noble.inbox["accelerometer"].x = data.readFloatLE(4);
+    noble.inbox["accelerometer"].y = data.readFloatLE(8);
+    noble.inbox["accelerometer"].z = data.readFloatLE(12);
+    return;
+  })
+  .catch((error) => {
+    loggerChild.error(error);
+    noble.inbox["accelerometer"].timestamp = null;
+    noble.inbox["accelerometer"].x = null;
+    noble.inbox["accelerometer"].y = null;
+    noble.inbox["accelerometer"].z = null;
+    return;
+  });
 };
 
 /**
@@ -272,21 +287,21 @@ const getGyroscope = () => {
       return resolve(data);
     });
   })
-    .then((data) => {
-      noble.inbox["gyroscope"].timestamp = data.readFloatLE(0);
-      noble.inbox["gyroscope"].x = data.readFloatLE(4);
-      noble.inbox["gyroscope"].y = data.readFloatLE(8);
-      noble.inbox["gyroscope"].z = data.readFloatLE(12);
-      return;
-    })
-    .catch((error) => {
-      loggerChild.error(error);
-      noble.inbox["gyroscope"].timestamp = null;
-      noble.inbox["gyroscope"].x = null;
-      noble.inbox["gyroscope"].y = null;
-      noble.inbox["gyroscope"].z = null;
-      return;
-    });
+  .then((data) => {
+    noble.inbox["gyroscope"].timestamp = data.readFloatLE(0);
+    noble.inbox["gyroscope"].x = data.readFloatLE(4);
+    noble.inbox["gyroscope"].y = data.readFloatLE(8);
+    noble.inbox["gyroscope"].z = data.readFloatLE(12);
+    return;
+  })
+  .catch((error) => {
+    loggerChild.error(error);
+    noble.inbox["gyroscope"].timestamp = null;
+    noble.inbox["gyroscope"].x = null;
+    noble.inbox["gyroscope"].y = null;
+    noble.inbox["gyroscope"].z = null;
+    return;
+  });
 };
 
 /**
@@ -302,27 +317,27 @@ const getVoltage = () => {
       return resolve(data);
     });
   })
-    .then((data) => {
-      if (data.readFloatLE(4) !== 0) {
-        noble.inbox["voltage"].timestamp = data.readFloatLE(0);
-        noble.inbox["voltage"].value = data.readFloatLE(4);
-        if (
-          noble.inbox["voltage"].value <= 1.2 &&
-          noble.inbox["voltage"].value > 0
-        ) {
-          loggerChild.warn(
-            "battery voltage is low!! :" + noble.inbox["voltage"].value + "V"
-          );
-        }
+  .then((data) => {
+    if (data.readFloatLE(4) !== 0) {
+      noble.inbox["voltage"].timestamp = data.readFloatLE(0);
+      noble.inbox["voltage"].value = data.readFloatLE(4);
+      if (
+        noble.inbox["voltage"].value <= 1.2 &&
+        noble.inbox["voltage"].value > 0
+      ) {
+        loggerChild.warn(
+          "battery voltage is low!! :" + noble.inbox["voltage"].value + "V"
+        );
       }
-      return;
-    })
-    .catch((error) => {
-      loggerChild.error(error);
-      noble.inbox["voltage"].timestamp = null;
-      noble.inbox["voltage"].value = null;
-      return;
-    });
+    }
+    return;
+  })
+  .catch((error) => {
+    loggerChild.error(error);
+    noble.inbox["voltage"].timestamp = null;
+    noble.inbox["voltage"].value = null;
+    return;
+  });
 };
 
 /**
@@ -340,12 +355,37 @@ const getVersion = () => {
     });
   })
   .then((data) => {
-    noble.inbox["version"] = data.readUInt16LE(0) + "." +data.readUInt16LE(2);
+    noble.inbox["version"] = data.readUInt16LE(0) + "." + data.readUInt16LE(2);
     return;
   })
   .catch((error) => {
     loggerChild.error(error);
     noble.inbox["version"] = null;
+    return;
+  });
+};
+
+/**
+ * Get MaBeee Name
+ * @returns 
+ */
+const getMaBeeeName = () => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => reject('timeout'), 10000);
+    noble.characteristics["mabeeeName"].instance.read((error, data) => {
+      if (error !== null) {
+        return reject(error);
+      }
+      return resolve(data);
+    });
+  })
+  .then((data) => {
+    noble.inbox["mabeee"].name = data.toString();
+    return;
+  })
+  .catch((error) => {
+    loggerChild.error(error);
+    noble.inbox["mabeee"].name = null;
     return;
   });
 };
