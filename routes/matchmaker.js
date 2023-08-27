@@ -20,7 +20,10 @@ router.put("/state/:trigger", (req, res) => {
   try {
     const trigger = req.params.trigger;
     switch (trigger) {
-      case  "ready":
+      case "undefinded":
+        req.app.set("state", STATE.UNDEFINDED);
+        break;
+      case "ready":
         req.app.set("state", STATE.READY);
         req.app.set("allowOpReqToTrain", false);
         if (fs.existsSync(process.env.TEMP_DIR)) {
