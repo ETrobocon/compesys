@@ -104,6 +104,7 @@ noble.inbox = {
   pwm: {
     timestamp: 0,
     value: 0,
+    targetValue: 0,
   },
   version: null,
   mabeee: {
@@ -115,8 +116,8 @@ noble.timer = {
   accelerometer: 50,
   gyroscope: 50,
   voltage: 5000,
-  version: 10000,
-  mabeee: 10000,
+  version: 100000,
+  mabeee: 100000,
 };
 
 noble.on("stateChange", async (state) => {
@@ -153,6 +154,7 @@ noble.on("discover", async (peripheral) => {
       await waitForDiscover();
       await getVersion();
       await getMaBeeeName();
+      await setPwm(noble.inbox["pwm"].targetValue);
       loop();
     });
 
@@ -209,8 +211,8 @@ const loop = async () => {
   let accTimer = 0;
   let gyroTimer = 0;
   let voltageTimer = 0;
-  let versionTimer = 0;
-  let mabeeeTimer = 0;
+  let versionTimer = noble.timer.version;
+  let mabeeeTimer = noble.timer.mabeee;
   while (true) {
     if (!noble.connected) {
       break;
@@ -339,6 +341,61 @@ const getVoltage = () => {
     return;
   });
 };
+
+/**
+ * Set PWM value for iot train 
+ * @param {number} pwm 
+ * @returns 
+ */
+const setPwm = (pwm) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => reject('timeout'), 1000);
+    noble.inbox["pwm"].targetValue = pwm;
+    noble.characteristics["pwm"].instance.write(
+      new Buffer.from([pwm]),
+      false,
+      (error) => {
+        if (error !== null) {
+          return reject(error);
+        }
+        return resolve();
+      }
+    );
+  })
+  .then(() => {
+    return null;
+  })
+  .catch((error) => {
+    loggerChild.error(error);
+    return error;
+  });
+};
+noble.setPwm = setPwm
+
+/**
+ * Get pwm for iot_train 
+ * @returns 
+ */
+const getPwm = () => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => reject('timeout'), 10000);
+    noble.characteristics["pwm"].instance.read((error, data) => {
+      if (error !== null) {
+        return reject(error);
+      }
+      return resolve(data);
+    });
+  })
+  .then((data) => {
+    noble.inbox["pwm"].value = data.readUInt8(0);
+    return;
+  })
+  .catch((error) => {
+    loggerChild.error(error);
+    return;
+  });
+};
+noble.getPwm = getPwm
 
 /**
  * Get firmware version for iot_train 
