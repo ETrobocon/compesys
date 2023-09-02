@@ -235,6 +235,7 @@ const loop = async () => {
     }
     if (mabeeeTimer > noble.timer.mabeee) {
       await getMaBeeeName();
+      mabeeeTimer = 0;
     }
 
     await sleep(10);
