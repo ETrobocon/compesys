@@ -14,6 +14,9 @@ class RequestError extends Error {
       case 404:
         this.status = "Not Found";
         break;
+      case 429:
+        this.status = "Too Many Requests"
+        break;
       case 500:
         this.status = "Internal Server Error";
         break;

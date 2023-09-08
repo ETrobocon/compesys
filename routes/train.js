@@ -50,7 +50,7 @@ router.put("/", async (req, res) => {
       throw new RequestError(403, "pwm not specified or out of range");
     }
 
-    const err = await setPWM(pwm);
+    const err = await iottrain.setPwm(pwm);
     if (err !== null) {
       throw err;
     }
@@ -66,34 +66,5 @@ router.put("/", async (req, res) => {
 router.all("*", (req, res, next) => {
   next('router')
 });
-
-/**
- * Set PWM value for iot train 
- * @param {number} pwm 
- * @returns 
- */
-const setPWM = (pwm) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => reject('timeout'), 1000);
-    iottrain.characteristics["pwm"].instance.write(
-      new Buffer.from([pwm]),
-      false,
-      (error) => {
-        if (error !== null) {
-          return reject(error);
-        }
-        return resolve();
-      }
-    );
-  })
-  .then(() => {
-    return null;
-  })
-  .catch((error) => {
-    loggerChild.error(error);
-    iottrain.inbox["voltage"].value = null;
-    return error;
-  });
-};
 
 module.exports = router;

@@ -21,8 +21,8 @@ router.post(
         throw new RequestError(403, "Request not currently allowed");
       }
       const id = req.query.id;
-      if (id === "") {
-        throw new RequestError(400, "Bad Request");
+      if (id === undefined || !(id >= 1 && id <= 300)) {
+        throw new RequestError(400, "Invalid id format or range");
       }
       if (req.get("Content-Type") !== "image/png") {
         throw new RequestError(400, "Unexpected content type");
@@ -37,6 +37,7 @@ router.post(
         ("0" + now.getSeconds()).slice(-2);
       const directoryPath = `${process.env.TEMP_DIR}/${id}`;
       const path = `${process.env.TEMP_DIR}/${id}/${id}_${date}.png`;
+
       if (!fs.existsSync(directoryPath)) {
         fs.mkdir(directoryPath, (err) => {
           if (err) {
@@ -49,6 +50,13 @@ router.post(
           });
         });
       }
+
+      const files = fs.readdirSync(directoryPath);
+      const fileCount = files.length;
+      if (fileCount >= 3 && req.app.get("state") !== STATE.UNDEFINDED) {
+        throw new RequestError(429, "Up to 2 images can be accepted");
+      }
+
       fs.writeFile(path, req.body, "binary", (err) => {
         if (err) {
           throw err;

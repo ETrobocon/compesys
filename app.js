@@ -24,7 +24,7 @@ app.use("/snap", snap);
 app.use("/train", train);
 app.use("/matchmaker", matchmaker);
 app.use("/version", version);
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).json({
     status: "Not Found",
   });
