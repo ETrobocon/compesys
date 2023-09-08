@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 
-BASEDIR=/home/etrobo/compesys
+BASEDIR=/opt/compesys
 LOGDIR=/var/log/compesys
 APLNAME=app.js
 
