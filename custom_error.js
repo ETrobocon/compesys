@@ -32,6 +32,7 @@ const error = (req, res, next) => {
         message: err.message 
       });
     } else if (!res.statusCode) {
+      logger.error(err);
       res.status(500).json({ 
         status: "Internal Server Error"
       });
