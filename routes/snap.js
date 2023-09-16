@@ -21,7 +21,7 @@ router.post(
         throw new RequestError(403, "Request not currently allowed");
       }
       const id = req.query.id;
-      if (id === undefined || !(id >= 1 && id <= 999)) {
+      if (id === undefined || !(id >= 1 && id <= 300)) {
         throw new RequestError(400, "Invalid id format or range");
       }
       if (req.get("Content-Type") !== "image/png") {
