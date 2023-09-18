@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { RequestError, error }= require('../custom_error.js');
 const { STATE, MATCHMAKER_IP } = require("../constants");
-const iottrain = require("../iottrain_central");
+const { getAccelerometer, getGyroscope, getVoltage, setPwm } = require("../iottrain_central");
 const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "train" });
 
@@ -17,9 +17,9 @@ router.get("/", (req, res) => {
       throw new RequestError(403, "Request not currently allowed");
     }
 
-    const accel = iottrain.inbox.accelerometer;
-    const gyro = iottrain.inbox.gyroscope;
-    const volt = iottrain.inbox.voltage;
+    const accel = getAccelerometer();
+    const gyro = getGyroscope();
+    const volt = getVoltage();
 
     const param = {
       accel: {
@@ -50,7 +50,7 @@ router.put("/", async (req, res) => {
       throw new RequestError(403, "pwm not specified or out of range");
     }
 
-    const err = await iottrain.setPwm(pwm);
+    const err = await setPwm(pwm);
     if (err !== null) {
       throw err;
     }
