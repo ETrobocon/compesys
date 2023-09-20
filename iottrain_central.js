@@ -253,7 +253,7 @@ noble.on("discover", async (peripheral) => {
                 noble.inbox.mabeee["voltage"].value > 0
               ) {
                 loggerChild.warn(
-                  "battery voltage is low!! :" + noble.inbox["voltage"].value + "V"
+                  "battery voltage is low!! :" + noble.inbox.mabeee["voltage"].value + "V"
                 );
               }
             });
