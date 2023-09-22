@@ -264,7 +264,7 @@ noble.on("discover", async (peripheral) => {
       if (!noble.xiao.connected) {
         noble.startScanningAsync();
       }
-      await setPwm(noble.inbox.mabeee.pwm.targetValue);
+      // await setPwm(noble.inbox.mabeee.pwm.targetValue);
       loopForMabeee();
     } else {
       return;
