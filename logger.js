@@ -33,8 +33,13 @@ function accesslogHandler(req, res, next) {
     if (chunk) {
       chunks.push(chunk);
     }
-    var body = Buffer.concat(chunks).toString('utf8');
-    const logs = req.method + " " + req.originalUrl + " " + res.statusCode + " " + body
+
+    let logs = req.ip + " " + req.method + " " + req.originalUrl + " " + res.statusCode;
+    if (res.get('Content-Type').startsWith('application/json')) {
+      let body = Buffer.concat(chunks).toString('utf8');
+      logs += " " + body;
+    }
+
     if (res.statusCode >= 200 && res.statusCode < 300) {
       logger.info(logs);
     } else if (res.statusCode >= 400 && res.statusCode < 500) {
