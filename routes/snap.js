@@ -34,12 +34,13 @@ router.post(
         ("0" + now.getDate()).slice(-2) +
         ("0" + now.getHours()).slice(-2) +
         ("0" + now.getMinutes()).slice(-2) +
-        ("0" + now.getSeconds()).slice(-2);
+        ("0" + now.getSeconds()).slice(-2) +
+        ("0" + now.getMilliseconds()).slice(-3);
       const directoryPath = `${process.env.TEMP_DIR}/${id}`;
       const path = `${process.env.TEMP_DIR}/${id}/${id}_${date}.png`;
 
       if (!fs.existsSync(directoryPath)) {
-        fs.mkdir(directoryPath, (err) => {
+        fs.mkdirSync(directoryPath, (err) => {
           if (err) {
             throw err;
           }
@@ -53,11 +54,10 @@ router.post(
 
       const files = fs.readdirSync(directoryPath);
       const fileCount = files.length;
-      if (fileCount >= 3 && req.app.get("state") !== STATE.UNDEFINDED) {
+      if (fileCount > 2 && req.app.get("state") !== STATE.UNDEFINDED) {
         throw new RequestError(429, "Up to 2 images can be accepted");
       }
-
-      fs.writeFile(path, req.body, "binary", (err) => {
+      fs.writeFileSync(path, req.body, "binary", (err) => {
         if (err) {
           throw err;
         }
