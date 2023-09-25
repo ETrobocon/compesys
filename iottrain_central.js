@@ -3,6 +3,9 @@ const { logger } = require("./logger.js");
 const e = require("express");
 const loggerChild = logger.child({ domain: "iottrain_central" });
 
+const AsyncLock = require('async-lock');
+const lock = new AsyncLock({timeout:5000});
+
 const sleep = (msec) => new Promise((resolve) => setTimeout(resolve, msec));
 
 // BLE peripheral GATT profile: XIAO side
@@ -160,6 +163,7 @@ noble.inbox = {
     voltage: {
       timestamp: null,
       value: null,
+      isRequested: false,
     },
     pwm: {
       timestamp: 0,
@@ -197,15 +201,17 @@ noble.on("discover", async (peripheral) => {
   }
 
   if (
-    (process.env.MY_XIAO !== "" && process.env.MY_XIAO === localName) ||
-    (process.env.MY_XIAO === "" && localName.startsWith("XIAO"))  
+    ((process.env.MY_XIAO !== "" && process.env.MY_XIAO === localName) ||
+    (process.env.MY_XIAO === "" && localName.startsWith("XIAO"))) &&
+    !noble.xiao.connected
   ) {
     loggerChild.info("[noble]discovered: " + localName);
     await noble.stopScanningAsync();
     noble.xiao.servicesDiscovered = false;
   } else if (
-    (process.env.MY_MABEEE !== "" && process.env.MY_MABEEE === localName) ||
-    (process.env.MY_MABEEE === "" && localName.startsWith("MaBeee"))
+    ((process.env.MY_MABEEE !== "" && process.env.MY_MABEEE === localName) ||
+    (process.env.MY_MABEEE === "" && localName.startsWith("MaBeee"))) &&
+    !noble.mabeee.connected
   ) {
     loggerChild.info("[noble]discovered: " + localName);
     await noble.stopScanningAsync();
@@ -217,28 +223,23 @@ noble.on("discover", async (peripheral) => {
   peripheral.connect();
 
   peripheral.once("connect", async function () {
+    loggerChild.info("[noble]connected: " + localName);
     if (localName.startsWith("XIAO")) {
       noble.xiao.connected = true;
       noble.inbox.xiao.name = localName;
-      loggerChild.info("[noble]connected: " + localName);
-      await this.discoverServicesAsync();
-      while (!noble.xiao.servicesDiscovered) {
-        await sleep(100);
-      }
+    } else if (localName.startsWith("MaBeee")) {
+      noble.mabeee.connected = true;
+      noble.inbox.mabeee.name = localName;
+    }
+    await this.discoverServicesAsync();
+    await waitForDiscover(localName);
+    if (localName.startsWith("XIAO")) {
       if (!noble.mabeee.connected) {
         noble.startScanningAsync();
       }
       await fetchVersion();
       loopForXiao();
     } else if (localName.startsWith("MaBeee")) {
-      noble.mabeee.connected = true;
-      noble.inbox.mabeee.name = localName;
-      loggerChild.info("[noble]connected: " + localName);
-      await this.discoverServicesAsync();
-      while (!noble.mabeee.servicesDiscovered) {
-        await sleep(100);
-      }
-
       for (const key in noble.mabeee.characteristics) {
         const characteristic = noble.mabeee.characteristics[key];
         const instance = characteristic.instance;
@@ -248,6 +249,7 @@ noble.on("discover", async (peripheral) => {
             await instance.subscribeAsync();
             instance.on('data', async (data, isNotification) => {
               noble.inbox.mabeee["voltage"].value = data.readUInt8(0) * Math.sqrt(2) / 100.0;
+              noble.inbox.mabeee["voltage"].isRequested = false;
               if (
                 noble.inbox.mabeee["voltage"].value <= 1.2 &&
                 noble.inbox.mabeee["voltage"].value > 0
@@ -264,10 +266,9 @@ noble.on("discover", async (peripheral) => {
       if (!noble.xiao.connected) {
         noble.startScanningAsync();
       }
-      // await setPwm(noble.inbox.mabeee.pwm.targetValue);
+      await sleep(100);
+      await setPwm(noble.inbox.mabeee.pwm.targetValue);
       loopForMabeee();
-    } else {
-      return;
     }
   });
 
@@ -350,11 +351,17 @@ noble.on("discover", async (peripheral) => {
   });
 });
 
-// const waitForDiscover = async () => {
-//   while (!noble.servicesDiscovered) {
-//     await sleep(100);
-//   }
-// }
+const waitForDiscover = async (localName) => {
+  if (localName.startsWith("XIAO")) {
+    while (!noble.xiao.servicesDiscovered) {
+      await sleep(100);
+    }
+  } else if (localName.startsWith("MaBeee")) {
+    while (!noble.mabeee.servicesDiscovered) {
+      await sleep(100);
+    }
+  }
+}
 
 const loopForXiao = async () => {
   let accTimer = 0;
@@ -395,8 +402,8 @@ const loopForMabeee = async () => {
       voltageTimer = 0;
     }
 
-    await sleep(10);
-    voltageTimer += 10;
+    await sleep(1000);
+    voltageTimer += 1000;
   }
 };
 
@@ -467,7 +474,10 @@ const fetchGyroscope = () => {
  * @returns 
  */
 const fetchVoltage = () => {
-  return new Promise((resolve, reject) => {
+  return lock.acquire('mabeee-lock', (resolve, reject) => {
+    if (noble.inbox.mabeee["voltage"].isRequested) {
+      return resolve();
+    }
     noble.mabeee.characteristics["voltage"].instance.write(
       new Buffer.from([0x00]),
       true,
@@ -475,29 +485,16 @@ const fetchVoltage = () => {
         if (error !== null) {
           return reject(error);
         }
+        noble.inbox.mabeee["voltage"].isRequested = true;
         return resolve();
       }
     );
   })
   .then(() => {
-    // if (data.readFloatLE(4) !== 0) {
-    //   noble.inbox.mabeee["voltage"].timestamp = data.readFloatLE(0);
-    //   noble.inbox.mabeee["voltage"].value = data.readFloatLE(4);
-    //   if (
-    //     noble.inbox.mabeee["voltage"].value <= 1.2 &&
-    //     noble.inbox.mabeee["voltage"].value > 0
-    //   ) {
-    //     loggerChild.warn(
-    //       "battery voltage is low!! :" + noble.inbox["voltage"].value + "V"
-    //     );
-    //   }
-    // }
     return;
   })
   .catch((error) => {
     loggerChild.error(error);
-    noble.inbox.mabeee["voltage"].timestamp = null;
-    noble.inbox.mabeee["voltage"].value = null;
     return;
   });
 };
@@ -508,9 +505,11 @@ const fetchVoltage = () => {
  * @returns 
  */
 const setPwm = (pwm) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => reject('timeout'), 1000);
+  return lock.acquire('mabeee-lock', (resolve, reject) => {    
     noble.inbox.mabeee["pwm"].targetValue = pwm;
+    if (noble.inbox.mabeee["pwm"].value === noble.inbox.mabeee["pwm"].targetValue) {
+      return resolve();
+    }
     noble.mabeee.characteristics["pwm"].instance.write(
       new Buffer.from([0x01, pwm, 0x0, 0x0, 0x0]),
       false,
@@ -518,6 +517,7 @@ const setPwm = (pwm) => {
         if (error !== null) {
           return reject(error);
         }
+        noble.inbox.mabeee["pwm"].value = noble.inbox.mabeee["pwm"].targetValue;
         return resolve();
       }
     );
@@ -535,26 +535,26 @@ const setPwm = (pwm) => {
  * fetch pwm
  * @returns 
  */
-const fetchPwm = () => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => reject('timeout'), 10000);
-    noble.mabeee.characteristics["pwm"].instance.read((error, data) => {
-      if (error !== null) {
-        return reject(error);
-      }
-      return resolve(data);
-    });
-  })
-  .then((data) => {
-    noble.inbox.mabeee["pwm"].value = data.readUInt8(0);
-    return;
-  })
-  .catch((error) => {
-    loggerChild.error(error);
-    noble.inbox.mabeee["pwm"].value = null;
-    return;
-  });
-};
+// const fetchPwm = () => {
+//   return new Promise((resolve, reject) => {
+//     setTimeout(() => reject('timeout'), 10000);
+//     noble.mabeee.characteristics["pwm"].instance.read((error, data) => {
+//       if (error !== null) {
+//         return reject(error);
+//       }
+//       return resolve(data);
+//     });
+//   })
+//   .then((data) => {
+//     noble.inbox.mabeee["pwm"].value = data.readUInt8(0);
+//     return;
+//   })
+//   .catch((error) => {
+//     loggerChild.error(error);
+//     noble.inbox.mabeee["pwm"].value = null;
+//     return;
+//   });
+// };
 
 /**
  * fetch firmware version for iot_train 
