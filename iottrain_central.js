@@ -474,21 +474,24 @@ const fetchGyroscope = () => {
  * @returns 
  */
 const fetchVoltage = () => {
-  return lock.acquire('mabeee-lock', (resolve, reject) => {
-    if (noble.inbox.mabeee["voltage"].isRequested) {
-      return resolve();
-    }
-    noble.mabeee.characteristics["voltage"].instance.write(
-      new Buffer.from([0x00]),
-      true,
-      (error) => {
-        if (error !== null) {
-          return reject(error);
-        }
-        noble.inbox.mabeee["voltage"].isRequested = true;
+  return new Promise((resolve, reject) => {
+    lock.acquire('mabeee-lock', () => {
+      if (noble.inbox.mabeee["voltage"].isRequested) {
         return resolve();
       }
-    );
+      noble.mabeee.characteristics["voltage"].instance.write(
+        new Buffer.from([0x00]),
+        true,
+        async(error) => {
+          if (error !== null) {
+            return reject(error);
+          }
+          noble.inbox.mabeee["voltage"].isRequested = true;
+          await sleep(150);
+          return resolve();
+        }
+      );
+    })
   })
   .then(() => {
     return;
@@ -505,22 +508,25 @@ const fetchVoltage = () => {
  * @returns 
  */
 const setPwm = (pwm) => {
-  return lock.acquire('mabeee-lock', (resolve, reject) => {    
-    noble.inbox.mabeee["pwm"].targetValue = pwm;
-    if (noble.inbox.mabeee["pwm"].value === noble.inbox.mabeee["pwm"].targetValue) {
-      return resolve();
-    }
-    noble.mabeee.characteristics["pwm"].instance.write(
-      new Buffer.from([0x01, pwm, 0x0, 0x0, 0x0]),
-      false,
-      (error) => {
-        if (error !== null) {
-          return reject(error);
-        }
-        noble.inbox.mabeee["pwm"].value = noble.inbox.mabeee["pwm"].targetValue;
+  return new Promise((resolve, reject) => {
+    lock.acquire('mabeee-lock', () => {    
+      noble.inbox.mabeee["pwm"].targetValue = pwm;
+      if (noble.inbox.mabeee["pwm"].value === noble.inbox.mabeee["pwm"].targetValue) {
         return resolve();
       }
-    );
+      noble.mabeee.characteristics["pwm"].instance.write(
+        new Buffer.from([0x01, pwm, 0x0, 0x0, 0x0]),
+        false,
+        async(error) => {
+          if (error !== null) {
+            return reject(error);
+          }
+          noble.inbox.mabeee["pwm"].value = noble.inbox.mabeee["pwm"].targetValue;
+          await sleep(150);
+          return resolve();
+        }
+      );
+    });
   })
   .then(() => {
     return null;
