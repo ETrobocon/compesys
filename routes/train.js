@@ -6,10 +6,13 @@ const { getAccelerometer, getGyroscope, getVoltage, setPwm } = require("../iottr
 const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "train" });
 
+const AsyncLock = require('async-lock');
+const lock = new AsyncLock({timeout:5000});
+
 router.use(error);
 
 router.get("/", (req, res) => {
-  try {
+  lock.acquire('train-lock', () => {
     if (
       req.app.get("state") === STATE.READY ||
       req.app.get("state") === STATE.GOAL
@@ -35,13 +38,13 @@ router.get("/", (req, res) => {
       volt: volt.value,
     };
     res.json(param);
-  } catch (error) {
+  }).catch((error) => {
     return res.status(error.statusCode).error(error);
-  }
+  });
 });
 
 router.put("/", async (req, res) => {
-  try {
+  lock.acquire('train-lock', async() => {
     if (!req.app.get("allowOpReqToTrain") && req.ip !== MATCHMAKER_IP) {
       throw new RequestError(403, "Request not currently allowed");
     }
@@ -58,9 +61,9 @@ router.put("/", async (req, res) => {
     res.json({
       status: "OK",
     });
-  } catch (error) {
+  }).catch((error) => {
     return res.status(error.statusCode).error(error);
-  }
+  });
 });
 
 router.all("*", (req, res, next) => {
