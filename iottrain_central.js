@@ -173,8 +173,8 @@ noble.inbox = {
   } 
 };
 noble.timer = {
-  accelerometer: 50,
-  gyroscope: 50,
+  accelerometer: 100,
+  gyroscope: 100,
   voltage: 5000,
   version: 100000,
 };
@@ -384,10 +384,10 @@ const loopForXiao = async () => {
       versionTimer = 0;
     }
 
-    await sleep(10);
-    accTimer += 10;
-    gyroTimer += 10;
-    versionTimer += 10;
+    await sleep(100);
+    accTimer += 100;
+    gyroTimer += 100;
+    versionTimer += 100;
   }
 };
 
