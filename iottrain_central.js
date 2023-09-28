@@ -113,8 +113,8 @@ noble.inbox = {
 };
 noble.connected = false;
 noble.timer = {
-  accelerometer: 50,
-  gyroscope: 50,
+  accelerometer: 100,
+  gyroscope: 100,
   voltage: 5000,
   version: 100000,
   mabeee: 100000,
@@ -238,12 +238,12 @@ const loop = async () => {
       mabeeeTimer = 0;
     }
 
-    await sleep(10);
-    accTimer += 10;
-    gyroTimer += 10;
-    voltageTimer += 10;
-    versionTimer += 10;
-    mabeeeTimer += 10;
+    await sleep(100);
+    accTimer += 100;
+    gyroTimer += 100;
+    voltageTimer += 100;
+    versionTimer += 100;
+    mabeeeTimer += 100;
   }
 };
 
