@@ -1,6 +1,7 @@
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const express = require("express");
+const player = require('node-wav-player');
 const router = express.Router();
 const { RequestError, error }= require('../custom_error.js');
 const { STATE } = require("../constants");
@@ -9,6 +10,8 @@ const loggerChild = logger.child({ domain: "snap" });
 
 const AsyncLock = require('async-lock');
 const lock = new AsyncLock({timeout:5000});
+
+var isPlaying = false;
 
 router.use(error);
 
@@ -71,9 +74,29 @@ router.post(
       });
     });
     res.status(201).json({ status: "Created" });
-  }).catch ((error) =>{
+  })
+  .then (() =>{
+    if (isPlaying) {
+      return;
+    }
+    isPlaying = true;
+    loggerChild.info("Start audio playback");
+    player.play({
+      path: './resource/snap.wav',
+      sync: true,
+    }).then(() => {
+      isPlaying = false;
+      loggerChild.info("End audio playback");
+    }).catch((error) => {
+      isPlaying = false;
+      loggerChild.error(error);
+    });
+  })
+  .catch ((error) =>{
     res.status(error.statusCode).error(error);
   })
+
+  
 });
 
 router.all("*", (req, res, next) => {
