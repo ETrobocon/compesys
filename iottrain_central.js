@@ -173,10 +173,7 @@ noble.inbox = {
   } 
 };
 noble.timer = {
-  accelerometer: 100,
-  gyroscope: 100,
   voltage: 5000,
-  version: 100000,
 };
 
 noble.on("stateChange", async (state) => {
@@ -266,7 +263,7 @@ noble.on("discover", async (peripheral) => {
       if (!noble.xiao.connected) {
         noble.startScanningAsync();
       }
-      await sleep(100);
+      await sleep(200);
       await setPwm(noble.inbox.mabeee.pwm.targetValue);
       loopForMabeee();
     }
@@ -354,40 +351,24 @@ noble.on("discover", async (peripheral) => {
 const waitForDiscover = async (localName) => {
   if (localName.startsWith("XIAO")) {
     while (!noble.xiao.servicesDiscovered) {
-      await sleep(100);
+      await sleep(200);
     }
   } else if (localName.startsWith("MaBeee")) {
     while (!noble.mabeee.servicesDiscovered) {
-      await sleep(100);
+      await sleep(200);
     }
   }
 }
 
 const loopForXiao = async () => {
-  let accTimer = 0;
-  let gyroTimer = 0;
-  let versionTimer = noble.timer.version;
   while (true) {
     if (!noble.xiao.connected) {
       break;
     }
-    if (accTimer > noble.timer.accelerometer) {
-      await fetchAccelerometer();
-      accTimer = 0;
-    }
-    if (gyroTimer > noble.timer.gyroscope) {
-      await fetchGyroscope();
-      gyroTimer = 0;
-    }
-    if (versionTimer > noble.timer.version) {
-      await fetchVersion();
-      versionTimer = 0;
-    }
-
+    await fetchAccelerometer();
     await sleep(100);
-    accTimer += 100;
-    gyroTimer += 100;
-    versionTimer += 100;
+    await fetchGyroscope();
+    await sleep(100);
   }
 };
 
