@@ -12,6 +12,8 @@ loggerChild.info("etrobo competition system");
 loggerChild.info(`Version:${process.env.npm_package_version}`);
 loggerChild.info("Initialization: start");
 
+require("./iottrain_central");
+
 const hello = require("./routes/hello");
 const snap = require("./routes/snap");
 const train = require("./routes/train");
