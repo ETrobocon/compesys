@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const limiter = require('express-limiter')
+const rateLimit = require('express-rate-limit')
 const { error }= require('../custom_error.js');
 const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "version" });
@@ -8,7 +8,7 @@ const loggerChild = logger.child({ domain: "version" });
 router.use(error);
 
 router.get("/", 
-  limiter({ 
+  rateLimit({ 
     lookup: ['connection.remoteAddress'],
     total: 10,
     expire: 1000,

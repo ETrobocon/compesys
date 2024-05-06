@@ -2,7 +2,7 @@ const bodyParser = require("body-parser");
 const fs = require("fs");
 const express = require("express");
 const router = express.Router();
-const limiter = require('express-limiter')
+const rateLimit = require('express-rate-limit')
 const { RequestError, error }= require('../custom_error.js');
 const { STATE } = require("../constants");
 const { logger } = require("../logger.js");
@@ -15,7 +15,7 @@ router.use(error);
 
 router.post(
   "/",
-  limiter({ 
+  rateLimit({ 
     lookup: ['connection.remoteAddress'],
     total: 10,
     expire: 1000,
