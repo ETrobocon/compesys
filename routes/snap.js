@@ -2,6 +2,7 @@ const bodyParser = require("body-parser");
 const fs = require("fs");
 const express = require("express");
 const router = express.Router();
+const limiter = require('express-limiter')
 const { RequestError, error }= require('../custom_error.js');
 const { STATE } = require("../constants");
 const { logger } = require("../logger.js");
@@ -14,6 +15,14 @@ router.use(error);
 
 router.post(
   "/",
+  limiter({ 
+    lookup: ['connection.remoteAddress'],
+    total: 10,
+    expire: 1000,
+    onRateLimited: (req, res, next) => {
+      next({ message: 'Rate limit exceeded', status: 429 })
+    }
+  }), 
   bodyParser.raw({ type: ["image/jpeg"], limit: ["10mb"] }),
   (req, res) => {
   lock.acquire('snap-lock', () => {
