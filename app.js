@@ -12,15 +12,15 @@ loggerChild.info("etrobo competition system");
 loggerChild.info(`Version:${process.env.npm_package_version}`);
 loggerChild.info("Initialization: start");
 
-const hello = require("./routes/hello");
+//const hello = require("./routes/hello");
 const snap = require("./routes/snap");
-const matchmaker = require("./routes/matchmaker");
+//const matchmaker = require("./routes/matchmaker");
 const version = require("./routes/version.js");
 
 app.use(accesslogHandler);
-app.use("/$", hello);
+//app.use("/$", hello);
 app.use("/snap", snap);
-app.use("/matchmaker", matchmaker);
+//app.use("/matchmaker", matchmaker);
 app.use("/version", version);
 app.use((req, res) => {
   res.status(404).json({
@@ -33,7 +33,7 @@ app.set("allowOpReqToTrain", true);
 if (fs.existsSync(process.env.TEMP_DIR)) {
   execSync(`rm -rf ${process.env.TEMP_DIR}/*`);
 } else {
-  fs.mkdir(process.env.TEMP_DIR, { mode: 0o777 }, (err) => {
+  fs.mkdirSync(process.env.TEMP_DIR, { mode: 0o777 }, (err) => {
     if (err) {
       throw err;
     }
