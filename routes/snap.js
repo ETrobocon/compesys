@@ -14,7 +14,7 @@ router.use(error);
 
 router.post(
   "/",
-  bodyParser.raw({ type: ["image/png"], limit: ["10mb"] }),
+  bodyParser.raw({ type: ["image/jpeg"], limit: ["10mb"] }),
   (req, res) => {
   lock.acquire('snap-lock', () => {
     if (
@@ -27,7 +27,7 @@ router.post(
     if (id === undefined || !(id >= 1 && id <= 300)) {
       throw new RequestError(400, "Invalid id format or range");
     }
-    if (req.get("Content-Type") !== "image/png") {
+    if (req.get("Content-Type") !== "image/jpeg") {
       throw new RequestError(400, "Unexpected content type");
     }
     const now = new Date();
