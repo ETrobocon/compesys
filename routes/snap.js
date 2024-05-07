@@ -49,7 +49,7 @@ router.post(
       ("0" + now.getSeconds()).slice(-2) +
       ("0" + now.getMilliseconds()).slice(-3);
     const directoryPath = `${process.env.TEMP_DIR}/${id}`;
-    const path = `${process.env.TEMP_DIR}/${id}/${id}_${date}.png`;
+    const path = `${process.env.TEMP_DIR}/${id}/${id}_${date}.jpeg`;
 
     if (!fs.existsSync(directoryPath)) {
       fs.mkdirSync(directoryPath, (err) => {
