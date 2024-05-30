@@ -30,7 +30,7 @@ const getFilesRecursively = async (directory) => {
   return filesDetails;
 };
 
-router.get("/", async (req, res) => {
+router.get("/list", async (req, res) => {
   try {
     const id = req.query.id;
     if (id === undefined || !(id >= 1 && id <= 300)) {

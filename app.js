@@ -23,7 +23,7 @@ app.use(accesslogHandler);
 app.use("/snap", snap);
 //app.use("/matchmaker", matchmaker);
 app.use("/version", version);
-app.use("/list", lists);
+app.use("/snap", lists);
 
 app.use((req, res) => {
   res.status(404).json({

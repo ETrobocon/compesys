@@ -7,7 +7,30 @@ const { RequestError, error }= require('../custom_error.js');
 const { STATE, MATCHMAKER_IP } = require("../constants");
 const { logger } = require("../logger.js");
 const loggerChild = logger.child({ domain: "matchmaker" });
+const { exec } = require('child_process');      // システムコマンドを実行するためのchild_processモジュールを使用
 
+function isValidSyncTime(synctime) {
+  // YYYYMMDDhhmmssのフォーマットに一致する正規表現パターン
+  const pattern = /^(19|20)\d\d(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])([01][0-9]|2[0-3])([0-5][0-9])([0-5][0-9])$/;
+  return pattern.test(synctime);
+}
+
+//// 使用例
+// const synctime = "20240530184341";
+// console.log(isValidSyncTime(synctime)); // 出力: true or false
+
+// execをPromiseでラップする関数
+function execPromise(command) {
+  return new Promise((resolve, reject) => {
+    exec(command, (execerr, stdout, stderr) => {
+      if (execerr) {
+        reject(execerr);
+      } else {
+        resolve({ stdout, stderr });
+      }
+    });
+  });
+}
 router.use(error);
 router.use((req, res, next) => {
   if (req.ip !== MATCHMAKER_IP) {
@@ -51,6 +74,22 @@ router.put("/state/:trigger", (req, res) => {
     res.json({
       status: "OK",
     });
+  } catch (error) {
+    return res.status(error.statusCode).error(error);
+  }
+});
+
+router.put("/clock/:synctime", async(req, res) => {
+  try {
+    const synctime = req.params.synctime;
+    if (isValidSyncTime(synctime)) {
+      const formattedTime = `${synctime.substring(0, 4)}-${synctime.substring(4, 6)}-${synctime.substring(6, 8)} ${synctime.substring(8, 10)}:${synctime.substring(10, 12)}:${synctime.substring(12, 14)}`;
+      // execPromiseをawaitで呼び出し
+      const { stdout } = await execPromise(`sudo date --set="${formattedTime}"`);
+      res.status(200).send(`時刻を設定しました: ${formattedTime}\n${stdout}`);
+    } else {
+      res.status(400).send('無効なフォーマットです。');
+    }
   } catch (error) {
     return res.status(error.statusCode).error(error);
   }
