@@ -16,15 +16,12 @@ loggerChild.info("Initialization: start");
 const snap = require("./routes/snap");
 //const matchmaker = require("./routes/matchmaker");
 const version = require("./routes/version.js");
-const lists = require("./routes/list.js");
 
 app.use(accesslogHandler);
 //app.use("/$", hello);
 app.use("/snap", snap);
 //app.use("/matchmaker", matchmaker);
 app.use("/version", version);
-app.use("/snap", lists);
-
 app.use((req, res) => {
   res.status(404).json({
     status: "Not Found",
