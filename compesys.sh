@@ -33,8 +33,10 @@ function startProc() {
 	# clean nohup.out
 	cp /dev/null ${BASEDIR}/nohup.out
 
-	nohup  sudo npm run start > ${LOGDIR}/out.log 2>/dev/null & 
+	nohup  npm run start > ${LOGDIR}/out.log 2>/dev/null & 
 	sleep 3
+	nohup  sudo systemctl start nginx > ${LOGDIR}/out.log 2>/dev/null & 
+	sleep 5
 	showMessage "compesys started." 
 
 	cd ${oldDir}
@@ -43,6 +45,7 @@ function startProc() {
 
 function stopProc() {
 
+	sudo systemctl stop nginx > /dev/null  
 	CHK_VAL=`pgrep -fo "${APLNAME}"`
 
 	if [ "x${CHK_VAL}" = "x" ] ;then
@@ -63,7 +66,7 @@ function stopProc() {
 	for pid in ${CHK_VAL} ; do
 		sudo kill -KILL ${pid} >/dev/null 
 	done
-
+	
 	showMessage "compesys stopped." 
 	return 0
 }
