@@ -1,5 +1,8 @@
 #!/bin/bash
 #
+# Copyright (c) 2024 ETロボコン実行委員会, Released under the MIT license
+# See LICENSE
+#
 
 BASEDIR=/opt/compesys
 LOGDIR=/var/log/compesys
@@ -32,17 +35,63 @@ function startProc() {
 
 	# clean nohup.out
 	cp /dev/null ${BASEDIR}/nohup.out
-
-	nohup  sudo npm run start > ${LOGDIR}/out.log 2>/dev/null & 
+    # compesys startup
+	nohup  npm run start > ${LOGDIR}/out.log 2>/dev/null & 
 	sleep 3
-	showMessage "compesys started." 
-
+	showMessage "compesys boot check .."
+	health_check=`curl --no-progress-meter -X GET http://localhost:1080/version -o /dev/null -w '%{http_code}\n'`
+	code=`echo "$health_check"`
+	count=0
+	while [ "$code" != "200" ] && [ $count -lt 10 ]; do 
+		count=$(( $count + 1 ))
+		sleep 1  
+		health_check=`curl --no-progress-meter -X GET http://localhost:1080/version -o /dev/null -w '%{http_code}\n'`
+		code=`echo "$health_check"`
+	done
+	if [ $count -lt 10 ]; then 
+		nohup  sudo systemctl start nginx > ${LOGDIR}/out.log 2>/dev/null & 
+		sleep 3
+		showMessage "nginx connected check .."
+		connected_check=`curl --no-progress-meter -X GET http://localhost/version -o /dev/null -w '%{http_code}\n'`
+		code=`echo "$connected_check"`
+		count=0
+		while [ "$code" != "200" ] && [ $count -lt 10 ]; do
+			echo "[HTTP_CODE : $code ]"
+			# Stopping due to connection failure
+			sudo systemctl stop nginx > /dev/null
+			# Increment retry count
+			count=$(( $count + 1 ))
+			sleep 2
+			# Try to start nginx again.
+			nohup  sudo systemctl start nginx > ${LOGDIR}/out.log 2>/dev/null & 
+			# Wait for startup
+			sleep 2
+			connected_check=`curl --no-progress-meter -X GET http://localhost/version -o /dev/null -w '%{http_code}\n'`
+			code=`echo "$connected_check"`
+		done
+		if [ $count -lt 10 ]; then 
+			showMessage "compesys started."
+		else
+			# nginx start failure
+			showMessage "compesys startup failure"
+			stopProc 
+			showMessage "Please Run \`start\` again."
+			return 1
+		fi 
+	else
+	# npm start failure
+		showMessage "compesys startup failure"
+		stopProc 
+		showMessage "Please Run \`start\` again."
+		return 1
+	fi
 	cd ${oldDir}
 	return 0
 }
 
 function stopProc() {
 
+	sudo systemctl stop nginx > /dev/null  
 	CHK_VAL=`pgrep -fo "${APLNAME}"`
 
 	if [ "x${CHK_VAL}" = "x" ] ;then
@@ -63,7 +112,7 @@ function stopProc() {
 	for pid in ${CHK_VAL} ; do
 		sudo kill -KILL ${pid} >/dev/null 
 	done
-
+	
 	showMessage "compesys stopped." 
 	return 0
 }
