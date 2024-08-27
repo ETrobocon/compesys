@@ -12,6 +12,7 @@ export default class ConfigRepository implements ConfigGateway {
     return new Config(
       this.environmentVariablesReader.load(CONFIG.LISTEN_PORT) ?? '',
       this.environmentVariablesReader.load(CONFIG.TEMP_DIR) ?? '',
+      this.environmentVariablesReader.load(CONFIG.MATCHMAKER_IP) ?? '',
     );
   }
 }

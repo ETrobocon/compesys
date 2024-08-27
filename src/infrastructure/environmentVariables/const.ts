@@ -9,4 +9,5 @@ export const SOFTWARE = {
 export const CONFIG = {
   LISTEN_PORT: 'LISTEN_PORT',
   TEMP_DIR: 'TEMP_DIR',
+  MATCHMAKER_IP: 'MATCHMAKER_IP',
 } as const;

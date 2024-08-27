@@ -1,6 +1,6 @@
 {
   "name": "compesys",
-  "version": "3.0.0β",
+  "version": "3.0.1",
   "main": "app.js",
   "type": "module",
   "private": true,
@@ -24,6 +24,7 @@
   "license": "MIT",
   "description": "",
   "dependencies": {
+    "archiver": "^7.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
@@ -41,6 +42,7 @@
     "@jest-mock/express": "^2.1.0",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/node22": "^22.0.0",
+    "@types/archiver": "^6.0.2",
     "@types/cors": "^2.8.17",
     "@types/eslint__js": "^8.42.3",
     "@types/eslint-config-prettier": "^6.11.3",

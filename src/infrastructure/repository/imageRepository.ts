@@ -1,3 +1,4 @@
+import archiver from 'archiver';
 import fs from 'fs';
 import path from 'path';
 
@@ -15,6 +16,38 @@ export default class ImageRepository implements ImageGateway {
     return fs.readFileSync(
       path.join(this.TEMP_DIR, teamId.toString(), imageFileName),
     );
+  }
+
+  public getImageArchive(teamId: number): Promise<Buffer> {
+    const zipPath = `${this.TEMP_DIR}/${teamId}.zip`;
+    const targetDirectory = `${this.TEMP_DIR}/${teamId}`;
+
+    return new Promise((resolve, reject) => {
+      const output = fs.createWriteStream(zipPath);
+      const archive = archiver('zip', {
+        zlib: { level: 9 },
+      });
+
+      output.on('close', () => {
+        fs.readFile(zipPath, (err, data) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(data);
+          }
+        });
+      });
+
+      archive.on('error', (err) => {
+        reject(err);
+      });
+
+      archive.pipe(output);
+
+      archive.glob('**/*.jpeg', { cwd: targetDirectory });
+
+      archive.finalize();
+    });
   }
 
   public listFiles(teamId: number): FileInfo[] {

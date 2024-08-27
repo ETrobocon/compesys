@@ -1,7 +1,14 @@
 import * as esbuild from 'esbuild';
 import esbuildPluginPino from 'esbuild-plugin-pino';
+import fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+
+const outdir = 'dist';
+if (fs.existsSync(outdir)) {
+  fs.rmSync(outdir, { recursive: true, force: true });
+}
+fs.mkdirSync(outdir);
 
 await esbuild
   .build({
@@ -18,7 +25,7 @@ await esbuild
     bundle: true,
     platform: 'node',
     target: 'node16',
-    outdir: 'dist',
+    outdir: outdir,
     format: 'esm',
     alias: {
       '@': path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'src'),

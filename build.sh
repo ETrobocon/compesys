@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# Copyright (c) 2024 ETロボコン実行委員会, Released under the MIT license
+# See LICENSE
+#
 
 mkdir ./tmp
 

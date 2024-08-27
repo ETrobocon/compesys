@@ -3,15 +3,19 @@ import { DEFAULT_LISTEN_PORT, MATCHMAKER_IP } from './constants';
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
+import expressWs from 'express-ws';
 import { AddressInfo } from 'net';
+import ws from 'ws';
 
 import { ErrorMiddleware } from '@/custom-error';
 import Matchmaker from '@/infrastructure/http/express/routes/matchmaker';
 import Snap from '@/infrastructure/http/express/routes/snap';
 import Version from '@/infrastructure/http/express/routes/version';
 import { CustomLogger, ResponseBodyCaptureMiddleware } from '@/logger';
+import { archiveTempTeamDirectory } from '@/util';
 
-const app = express();
+const instanceExpressWs = expressWs(express());
+const app = instanceExpressWs.app;
 const customLogger = new CustomLogger();
 const loggerMiddleware = customLogger.loggerMiddleware;
 const loggerOption = loggerMiddleware.logger;
@@ -19,7 +23,12 @@ const loggerOption = loggerMiddleware.logger;
 const whitelist = [MATCHMAKER_IP];
 
 const customKeyGenerator = (req: Request): string => {
-  const ip = req.ip;
+  const ip: string = Object.prototype.hasOwnProperty.call(
+    req.headers,
+    'x-forwarded-for',
+  )
+    ? (req.headers['x-forwarded-for'] as string)
+    : req.ip!;
   if (ip === undefined) {
     return '';
   }
@@ -39,6 +48,8 @@ const limiter = rateLimit({
     });
   },
 });
+
+await archiveTempTeamDirectory();
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -73,6 +84,12 @@ const server = app.listen(
 
 const handleShutdown = (signal: string) => {
   loggerOption.info(`Received ${signal}. Shutting down gracefully.`);
+  const wss: ws.Server = instanceExpressWs.getWss() as ws.Server;
+  wss.clients.forEach((client) => {
+    if (client.readyState === ws.OPEN) {
+      client.close();
+    }
+  });
   server?.close(() => {
     loggerOption.info('Closed out remaining connections.');
     process.exit(0);
